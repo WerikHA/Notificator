@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   notification:
-    image: werikoliveira/notificator:latest
+    image: werikoliveira/notificator:0.1
     container_name: notification-app
     restart: unless-stopped
     ports:
