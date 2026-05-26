@@ -36,7 +36,7 @@ export default function CampaignTable({ data }: CampaignTableProps) {
             <TableBody>
               {data.map((campaign) => (
                 <TableRow key={campaign.id}>
-                  <TableCell className="font-medium">{campaign.name}</TableCell>
+                  <TableCell className="font-medium">{campaign.campaignName}</TableCell>
                   <TableCell className="text-right">{formatCurrency(campaign.spend)}</TableCell>
                   <TableCell className="text-right">{formatNumber(campaign.impressions)}</TableCell>
                   <TableCell className="text-right">{formatNumber(campaign.clicks)}</TableCell>

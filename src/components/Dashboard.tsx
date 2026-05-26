@@ -237,8 +237,8 @@ export default function Dashboard() {
             <div className="p-3 flex justify-between items-center text-xs text-gray-500 border-t border-gray-800">
               <span>1 - 4 / 4</span>
               <div className="flex gap-2">
-                <button className="hover:text-white"><</button>
-                <button className="hover:text-white">></button>
+                <button className="hover:text-white">{'<'}</button>
+                <button className="hover:text-white">{'>'}</button>
               </div>
             </div>
           </CardContent>

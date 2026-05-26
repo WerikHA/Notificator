@@ -12,6 +12,8 @@ export interface CampaignMetric {
   ctr: number;
   cpc: number;
   frequency: number;
+  conversions: number;
+  roas: number;
   videoView25: number;
   videoView75: number;
 }
@@ -39,10 +41,10 @@ export const mockDailyMetrics: DailyMetric[] = Array.from({ length: 25 }, (_, i)
 });
 
 export const mockCampaigns: CampaignMetric[] = [
-  { id: '1', campaignName: '[ENGAJA][CATANDUVA][VÍDEON...', adSetName: '[ENGAJA][CATANDUVA][VÍDEON...', adName: '[ENGAJA][CATANDUVA][VÍDEON...', spend: 590.18, impressions: 120000, clicks: 277, messages: 78, reach: 80000, cpm: 4.08, ctr: 0.23, cpc: 2.13, frequency: 1.5, videoView25: 8523, videoView75: 1827 },
-  { id: '2', campaignName: 'Camp - 2 feira mulher omini', adSetName: 'Conj 2 feira mulher omini', adName: '2 feira mulher omini', spend: 184.76, impressions: 80000, clicks: 262, messages: 38, reach: 40000, cpm: 2.30, ctr: 0.32, cpc: 0.70, frequency: 2.0, videoView25: 4000, videoView75: 900 },
-  { id: '3', campaignName: 'Camp - 2 feira mulher omini 2...', adSetName: 'Conj 2 feira mulher omini 23 /...', adName: '2 feira mulher omini 23 / 05', spend: 166.64, impressions: 60000, clicks: 205, messages: 29, reach: 30000, cpm: 2.77, ctr: 0.34, cpc: 0.81, frequency: 2.0, videoView25: 3000, videoView75: 700 },
-  { id: '4', campaignName: '[RECONHE][CATANDUVA][FEIRÃ...', adSetName: '[ENGAJA][CATANDUVA][FEIRÃO]...', adName: '[ENGAJA][CATANDUVA][FEIRÃO]...', spend: 348.75, impressions: 56128, clicks: 126, messages: 0, reach: 21074, cpm: 6.21, ctr: 0.22, cpc: 2.76, frequency: 2.66, videoView25: 2000, videoView75: 500 },
+  { id: '1', campaignName: '[ENGAJA][CATANDUVA][VÍDEON...', adSetName: '[ENGAJA][CATANDUVA][VÍDEON...', adName: '[ENGAJA][CATANDUVA][VÍDEON...', spend: 590.18, impressions: 120000, clicks: 277, messages: 78, reach: 80000, cpm: 4.08, ctr: 0.23, cpc: 2.13, frequency: 1.5, conversions: 45, roas: 3.2, videoView25: 8523, videoView75: 1827 },
+  { id: '2', campaignName: 'Camp - 2 feira mulher omini', adSetName: 'Conj 2 feira mulher omini', adName: '2 feira mulher omini', spend: 184.76, impressions: 80000, clicks: 262, messages: 38, reach: 40000, cpm: 2.30, ctr: 0.32, cpc: 0.70, frequency: 2.0, conversions: 20, roas: 4.5, videoView25: 4000, videoView75: 900 },
+  { id: '3', campaignName: 'Camp - 2 feira mulher omini 2...', adSetName: 'Conj 2 feira mulher omini 23 /...', adName: '2 feira mulher omini 23 / 05', spend: 166.64, impressions: 60000, clicks: 205, messages: 29, reach: 30000, cpm: 2.77, ctr: 0.34, cpc: 0.81, frequency: 2.0, conversions: 15, roas: 2.8, videoView25: 3000, videoView75: 700 },
+  { id: '4', campaignName: '[RECONHE][CATANDUVA][FEIRÃ...', adSetName: '[ENGAJA][CATANDUVA][FEIRÃO]...', adName: '[ENGAJA][CATANDUVA][FEIRÃO]...', spend: 348.75, impressions: 56128, clicks: 126, messages: 0, reach: 21074, cpm: 6.21, ctr: 0.22, cpc: 2.76, frequency: 2.66, conversions: 5, roas: 1.1, videoView25: 2000, videoView75: 500 },
 ];
 
 export const totalMetrics = {
