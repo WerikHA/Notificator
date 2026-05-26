@@ -1,7 +1,7 @@
 {
-  "name": "Central de Notificações",
-  "short_name": "Notificações",
-  "description": "Interface simples para receber alertas e notificações via Webhook.",
+  "name": "AM Dashboard Traffic",
+  "short_name": "AM Dashboard",
+  "description": "Dashboard de tráfego para campanhas Meta Ads.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",

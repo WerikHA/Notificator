@@ -92,8 +92,8 @@ export default function Dashboard() {
                </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">Meta</h1>
-              <p className="text-xs text-gray-400">Relatório Meta Ads | Omini Catanduva</p>
+              <h1 className="text-xl font-bold text-white tracking-tight">AM Dashboard Traffic</h1>
+              <p className="text-xs text-gray-400">Relatório Meta Ads</p>
             </div>
           </div>
 

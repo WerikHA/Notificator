@@ -14,14 +14,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Central de Notificações",
-  description: "Interface simples para receber alertas e notificações via Webhook.",
+  title: "AM Dashboard Traffic",
+  description: "Dashboard de tráfego para campanhas Meta Ads.",
   manifest: "/manifest.json",
   themeColor: "#2563eb",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Notificações",
+    title: "AM Dashboard",
   },
 };
 

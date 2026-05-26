@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  notification:
+  dashboard:
     image: werikoliveira/notificator:0.1
-    container_name: notification-app
+    container_name: am-dashboard
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -12,8 +12,8 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_DIR=/app/data
-      # Chave para proteger o recebimento de notificações via Webhook
-      - API_SECRET_KEY=sua_chave_secreta_aqui
+      # Chave de API (opcional, para compatibilidade)
+      - API_SECRET_KEY=
       # Credenciais do Admin
       - ADMIN_USERNAME=WerikS
       - ADMIN_PASSWORD=We12wi25k#3912*
@@ -21,7 +21,7 @@ services:
       - META_ADS_ACCESS_TOKEN=sua_chave_aqui
       - META_ADS_ACCOUNT_ID=sua_conta_aqui
     labels:
-      - "com.casaos.description=Central de Notificações e Dashboard Meta Ads"
+      - "com.casaos.description=AM Dashboard Traffic - Dashboard Meta Ads"
       - "com.casaos.icon=https://cdn-icons-png.flaticon.com/512/3238/3238468.png"
       - "com.casaos.category=Utilities"
       - "com.casaos.port=3000"

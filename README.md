@@ -1,99 +1,77 @@
-# 📢 Central de Notificações
+# 🚀 AM Dashboard Traffic
 
-Uma interface simples e elegante para receber alertas e notificações via Webhook. Ideal para monitorar servidores, receber avisos de automações ou integrar com qualquer sistema que envie requisições HTTP.
-
-![Screenshot do App](https://via.placeholder.com/800x400.png?text=Central+de+Notificações)
+Dashboard de tráfego para campanhas Meta Ads. Acompanhe investimento, mensagens, cliques, alcance e muito mais em tempo real.
 
 ## ✨ Funcionalidades
 
-- 📱 **Interface estilo Chat**: Todas as notificações organizadas em tempo real.
-- 🔔 **Alerta Sonoro**: Toca um som de alerta alto quando uma nova notificação chega (ótimo para quando você não está olhando a tela).
--  **Compatível com tudo**: Receba notificações de qualquer lugar via Webhook (curl, n8n, Python, scripts de backup, etc).
--  **Pronto para CasaOS**: Instalação fácil com Docker Compose e interface amigável.
+- 📊 **Métricas em Tempo Real**: Acompanhe gastos, impressões, cliques e mensagens diretamente da API Meta Ads.
+- 📈 **Gráficos Interativos**: Visualize o desempenho diário com gráficos de área e funil de tráfego.
+- 📱 **Interface Responsiva**: Funciona perfeitamente em desktop e dispositivos móveis.
+- 📑 **Exportação em PDF**: Gere relatórios completos com um clique.
+- 🔗 **Multi-cliente**: Gerencie múltiplas contas de anúncios de diferentes clientes.
 
 ---
 
 ## 🚀 Como Instalar
 
-### Opção 1: CasaOS (Recomendado)
+### Opção 1: Docker Compose (Recomendado)
 
-Se você usa o CasaOS no seu servidor:
-
-1. Abra o terminal ou acesse a área de "App Store" > "Personalizada".
-2. Cole o código abaixo ou faça o upload do arquivo `docker-compose.yml`.
+1. Crie um arquivo `docker-compose.yml`:
 
 ```yaml
 version: '3.8'
 
 services:
-  notification:
+  dashboard:
     image: ghcr.io/werikoliveira/notification-server:main
-    container_name: notification-app
+    container_name: am-dashboard
     restart: unless-stopped
     ports:
       - "3000:3000"
     volumes:
       - ./data:/app/data
     environment:
-      - API_SECRET_KEY=sua_chave_secreta_aqui
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=sua_senha_aqui
 ```
 
-3. Clique em **Instalar**. O app estará disponível em `http://seu-ip:3000`.
-
-### Opção 2: Docker Compose (Manual)
-
-1. Crie um arquivo `docker-compose.yml` com o conteúdo acima.
 2. Execute:
    ```bash
    docker compose up -d
    ```
 
+3. Acesse `http://seu-ip:3000` e faça login.
+
+### Opção 2: Desenvolvimento Local
+
+```bash
+npm install
+npm run dev
+```
+
 ---
 
 ## ⚙️ Configuração
 
-Você pode ajustar o comportamento do app alterando as variáveis de ambiente no seu `docker-compose.yml`:
+### Variáveis de Ambiente
 
-| Variável | O que faz | Exemplo |
-| :--- | :--- | :--- |
-| `API_SECRET_KEY` | **Obrigatório**. A senha para quem quiser enviar notificações para você. | `minha-senha-123` |
-| `DATABASE_DIR` | Onde os dados são salvos (não precisa mudar). | `/app/data` |
+| Variável | Descrição | Obrigatório |
+| :--- | :--- | :---: |
+| `ADMIN_USERNAME` | Usuário do painel administrativo | Sim |
+| `ADMIN_PASSWORD` | Senha do painel administrativo | Sim |
+| `DATABASE_DIR` | Diretório para persistência dos dados | Não |
 
----
+### Como adicionar um cliente Meta Ads
 
-##  Como enviar notificações
+1. Faça login no painel administrativo.
+2. Clique em **"Novo Cliente"**.
+3. Preencha:
+   - **Nome do Cliente**
+   - **ID da Conta de Anúncios** (formato: número ou `act_` seguido do número)
+   - **Token de Acesso** (Access Token permanente ou de longa duração da Meta)
+4. Copie o link gerado e compartilhe com o cliente.
 
-O aplicativo funciona recebendo requisições **POST**. Você pode testar usando o `curl` no seu terminal ou integrando com seus scripts.
-
-### Exemplo com cURL:
-
-```bash
-curl -X POST http://localhost:3000/api/webhook/notification \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sua_chave_secreta_aqui" \
-  -d '{
-    "message": "O backup foi concluído com sucesso!",
-    "title": "Backup Diário"
-  }'
-```
-
-### Exemplo com Python:
-
-```python
-import requests
-
-url = "http://localhost:3000/api/webhook/notification"
-headers = {
-    "Authorization": "Bearer sua_chave_secreta_aqui",
-    "Content-Type": "application/json"
-}
-data = {
-    "message": "CPU com temperatura alta!",
-    "title": "Alerta do Servidor"
-}
-
-requests.post(url, headers=headers, json=data)
-```
+O dashboard estará disponível em `http://seu-app.com/dashboard/[slug-do-cliente]`.
 
 ---
 
