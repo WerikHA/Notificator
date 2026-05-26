@@ -199,16 +199,16 @@ export default function NotificationReceiver() {
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
-      <div className="bg-red-600 dark:bg-red-800 p-4 pt-12 shadow-md z-10">
+      <div className="bg-blue-600 dark:bg-blue-700 p-4 pt-12 shadow-md z-10">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="text-white" size={28} />
+            <Bell className="text-white" size={28} />
             <h1 className="text-xl font-bold text-white">Central de Alertas</h1>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-red-700"
+            className="text-white hover:bg-blue-500"
             onClick={testAlert}
           >
             <Volume2 size={20} />
