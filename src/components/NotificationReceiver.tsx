@@ -15,20 +15,19 @@ interface Notification {
 
 export default function NotificationReceiver() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [permissionGranted, setPermissionGranted] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [webhookUrl, setWebhookUrl] = useState('...');
+  
+  // Novo estado para garantir que o primeiro carregamento não dispare som
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastIdRef = useRef<number | null>(null);
-  const [copied, setCopied] = useState(false);
-  
-  // Estado para controlar se a permissão já foi concedida
-  const [permissionGranted, setPermissionGranted] = useState(false);
-  
-  // Fix Hydration: Initialize with placeholder and update in useEffect
-  const [webhookUrl, setWebhookUrl] = useState('...');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setWebhookUrl(`${window.location.origin}/api/webhook/notification`);
-      // Checar permissão atual ao carregar
       if ('Notification' in window) {
         if (Notification.permission === 'granted') {
           setPermissionGranted(true);
@@ -42,7 +41,7 @@ export default function NotificationReceiver() {
     
     const interval = setInterval(fetchNotifications, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [notifications]); // Dependência atualizada para capturar mudanças se necessário, mas geralmente vazio é ok se usarmos state callback
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -54,29 +53,38 @@ export default function NotificationReceiver() {
       if (res.ok) {
         const data: Notification[] = await res.json();
         
+        // Se ainda não carregamos os dados iniciais, apenas populamos e saímos sem tocar som
+        if (!hasLoadedInitialData) {
+          setNotifications(data);
+          if (data.length > 0) {
+             lastIdRef.current = data[data.length - 1].id;
+          }
+          setHasLoadedInitialData(true);
+          return;
+        }
+
+        // Lógica para novas notificações APÓS o carregamento inicial
         if (data.length > notifications.length) {
-          // Toca alerta e notifica apenas para notificações externas (não do usuário)
           const newMessages = data.filter(n => !notifications.find(existing => existing.id === n.id));
           const hasExternalAlert = newMessages.some(n => n.source !== 'user');
           
           if (hasExternalAlert) {
-            // Tocar som
             playMelodyAlert();
             
-            // Disparar notificação nativa de emergência para cada nova mensagem
             newMessages.forEach(n => {
               showEmergencyNotification(n);
             });
           }
           
           setNotifications(data);
-          lastIdRef.current = data[data.length - 1].id;
+          if (data.length > 0) {
+            lastIdRef.current = data[data.length - 1].id;
+          }
         } else if (data.length > 0 && lastIdRef.current !== data[data.length - 1].id) {
+           // Caso haja atualização no último ID, mas o tamanho do array não mudou (ex: edição/remoção se houvesse)
+           // Ou apenas sincronização de estado
            setNotifications(data);
            lastIdRef.current = data[data.length - 1].id;
-        } else if (notifications.length === 0 && data.length > 0) {
-          setNotifications(data);
-          lastIdRef.current = data[data.length - 1].id;
         }
       }
     } catch (error) {
@@ -97,6 +105,8 @@ export default function NotificationReceiver() {
         if (permission === 'granted') {
           setPermissionGranted(true);
           toast.success('Notificações ativadas com sucesso!');
+          // Força um reload das notificações agora que temos permissão
+          fetchNotifications(); 
         } else {
           toast.error('Permissão negada. Por favor, ative nas configurações do navegador.');
         }
@@ -126,10 +136,8 @@ export default function NotificationReceiver() {
 
   const playMelodyAlert = () => {
     try {
-      // Cria contexto de áudio se não existir ou se estiver fechado
       let audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Melodia urgente e alta (Dó-Ré-Mi-Fá-Sol-Lá-Si-Dó)
       const notes = [
         { freq: 523.25, start: 0.0, duration: 0.15 },    // C5
         { freq: 587.33, start: 0.15, duration: 0.15 },   // D5
@@ -138,12 +146,12 @@ export default function NotificationReceiver() {
         { freq: 783.99, start: 0.60, duration: 0.15 },   // G5
         { freq: 880.00, start: 0.75, duration: 0.15 },   // A5
         { freq: 987.77, start: 0.90, duration: 0.15 },   // B5
-        { freq: 1046.50, start: 1.05, duration: 0.6 },   // C6 (Longo e alto)
+        { freq: 1046.50, start: 1.05, duration: 0.6 },   // C6
       ];
 
       const now = audioContext.currentTime;
       const masterGain = audioContext.createGain();
-      masterGain.gain.value = 0.5; // Volume mais alto
+      masterGain.gain.value = 0.5; 
       masterGain.connect(audioContext.destination);
 
       notes.forEach(note => {
@@ -154,9 +162,8 @@ export default function NotificationReceiver() {
         gain.connect(masterGain);
         
         osc.frequency.value = note.freq;
-        osc.type = 'square'; // Onda quadrada soa mais "alarmante"
+        osc.type = 'square'; 
         
-        // Envelope para ser alto e nítido
         gain.gain.setValueAtTime(0, now + note.start);
         gain.gain.linearRampToValueAtTime(1.0, now + note.start + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.001, now + note.start + note.duration);
@@ -165,7 +172,6 @@ export default function NotificationReceiver() {
         osc.stop(now + note.start + note.duration + 0.1);
       });
 
-      // Fecha o contexto após o som terminar
       setTimeout(() => {
         if (audioContext.state !== 'closed') {
           audioContext.close();
