@@ -165,9 +165,9 @@ export async function GET(request: NextRequest) {
       const metaResult = await fetchMetaAdsData(period);
       if (metaResult.status === 'live-meta') {
         db.data.metrics = {
-          campaigns: metaResult.campaigns,
-          daily: metaResult.daily,
-          totals: metaResult.totals
+          campaigns: metaResult.campaigns || [],
+          daily: metaResult.daily || [],
+          totals: metaResult.totals || {}
         };
         await db.write();
         return NextResponse.json({ ...metaResult, source: 'meta' });
@@ -187,9 +187,9 @@ export async function GET(request: NextRequest) {
     const metaResult = await fetchMetaAdsData(period);
     if (metaResult.status === 'live-meta') {
       db.data.metrics = {
-        campaigns: metaResult.campaigns,
-        daily: metaResult.daily,
-        totals: metaResult.totals
+        campaigns: metaResult.campaigns || [],
+        daily: metaResult.daily || [],
+        totals: metaResult.totals || {}
       };
       await db.write();
       return NextResponse.json({ ...metaResult, source: 'meta' });
