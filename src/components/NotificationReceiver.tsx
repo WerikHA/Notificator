@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
-import { Bell, Volume2 } from 'lucide-react';
+import { Bell, Volume2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -9,6 +9,8 @@ interface Notification {
   id: number;
   message: string;
   timestamp: string;
+  title?: string;
+  source?: string;
 }
 
 export default function NotificationReceiver() {
@@ -97,6 +99,16 @@ export default function NotificationReceiver() {
     });
   };
 
+  const getSourceLabel = (source?: string) => {
+    if (!source) return null;
+    const labels: Record<string, string> = {
+      'external-api': 'API Externa',
+      'monitoring': 'Monitoramento',
+      'webhook': 'Webhook',
+    };
+    return labels[source] || source;
+  };
+
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
       <div className="bg-blue-600 dark:bg-blue-800 p-4 pt-12 shadow-md z-10">
@@ -121,7 +133,7 @@ export default function NotificationReceiver() {
           <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-70">
             <Bell size={64} className="mb-4" />
             <p className="text-lg">Aguardando notificações...</p>
-            <p className="text-sm mt-2">Novas mensagens aparecerão aqui.</p>
+            <p className="text-sm mt-2">Envie para: <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">/api/webhook/notification</code></p>
           </div>
         ) : (
           notifications.map((notification) => (
@@ -130,10 +142,23 @@ export default function NotificationReceiver() {
               className="flex justify-end animate-in fade-in slide-in-from-bottom-2 duration-300"
             >
               <div className="max-w-[85%] bg-blue-600 text-white rounded-2xl rounded-br-none px-4 py-3 shadow-sm">
+                {notification.title && (
+                  <p className="text-sm font-semibold text-blue-100 mb-1">
+                    {notification.title}
+                  </p>
+                )}
                 <p className="text-base break-words">{notification.message}</p>
-                <p className="text-xs text-blue-100 mt-1 text-right">
-                  {formatTime(notification.timestamp)}
-                </p>
+                <div className="flex items-center justify-between mt-2 text-xs text-blue-100">
+                  {notification.source && (
+                    <span className="flex items-center gap-1 bg-blue-700 px-2 py-0.5 rounded-full">
+                      <ExternalLink size={10} />
+                      {getSourceLabel(notification.source)}
+                    </span>
+                  )}
+                  <span className="ml-auto">
+                    {formatTime(notification.timestamp)}
+                  </span>
+                </div>
               </div>
             </div>
           ))

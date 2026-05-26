@@ -5,7 +5,13 @@ import fs from 'fs';
 
 interface DbSchema {
   examples: { id: number; name: string; createdAt: string }[];
-  notifications: { id: number; message: string; timestamp: string }[];
+  notifications: { 
+    id: number; 
+    message: string; 
+    timestamp: string;
+    source?: string;
+    title?: string;
+  }[];
 }
 
 const DB_FILE_NAME = 'db.json';
