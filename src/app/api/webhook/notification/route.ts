@@ -3,9 +3,26 @@ import { getDb } from '@/lib/database';
 
 export async function POST(request: NextRequest) {
   try {
+    // Validação da API Key
+    const authHeader = request.headers.get('authorization');
+    const apiKey = process.env.API_SECRET_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'API Secret Key não configurada no servidor.' },
+        { status: 500 }
+      );
+    }
+
+    if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
+      return NextResponse.json(
+        { error: 'Acesso negado. API Key inválida ou ausente.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
-    // Validação básica: mensagem é obrigatória
     if (!body.message || typeof body.message !== 'string') {
       return NextResponse.json(
         { error: 'Campo "message" é obrigatório e deve ser uma string' },
@@ -51,18 +68,22 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Endpoint para testar se a API está funcionando
+// Endpoint para testar se a API está funcionando e mostrar instruções
 export async function GET() {
   return NextResponse.json({
     status: 'active',
     endpoint: '/api/webhook/notification',
     method: 'POST',
+    auth_required: 'Bearer Token (API_SECRET_KEY)',
     required_fields: ['message'],
     optional_fields: ['title', 'source'],
     example: {
-      message: 'Servidor reiniciado com sucesso',
-      title: 'Alerta de Infraestrutura',
-      source: 'monitoring-system'
+      headers: { "Authorization": "Bearer SUA_CHAVE_API" },
+      body: {
+        message: 'Servidor reiniciado com sucesso',
+        title: 'Alerta de Infraestrutura',
+        source: 'monitoring-system'
+      }
     }
   });
 }

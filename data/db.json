@@ -1,0 +1,12 @@
+{
+  "examples": [],
+  "notifications": [
+    {
+      "id": 1,
+      "message": "ola",
+      "title": "Mensagem Manual",
+      "source": "user",
+      "timestamp": "2026-05-26T02:07:33.448Z"
+    }
+  ]
+}

@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
-import { Bell, Volume2, Send, ExternalLink } from 'lucide-react';
+import { useEffect, useState, useRef, useMemo } from 'react';
+import { Bell, Volume2, ExternalLink, Copy, Check, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 interface Notification {
@@ -16,9 +15,17 @@ interface Notification {
 
 export default function NotificationReceiver() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastIdRef = useRef<number | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Detecta a URL base automaticamente
+  const webhookUrl = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/api/webhook/notification`;
+    }
+    return '...';
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
@@ -38,9 +45,8 @@ export default function NotificationReceiver() {
       if (res.ok) {
         const data: Notification[] = await res.json();
         
-        // Check for new notifications
         if (data.length > notifications.length) {
-          // Only play sound for external alerts, not user-sent messages
+          // Toca alerta apenas para notificações externas (não do usuário)
           const newMessages = data.filter(n => !notifications.find(existing => existing.id === n.id));
           const hasExternalAlert = newMessages.some(n => n.source !== 'user');
           
@@ -101,32 +107,11 @@ export default function NotificationReceiver() {
     toast.info('Testando alerta sonoro');
   };
 
-  const sendMessage = async () => {
-    if (!message.trim()) return;
-
-    try {
-      const res = await fetch('/api/webhook/notification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message, 
-          title: 'Mensagem Manual',
-          source: 'user' 
-        }),
-      });
-
-      if (res.ok) {
-        setMessage('');
-        // Refresh to get the message back from DB with its ID
-        fetchNotifications(); 
-        toast.success('Mensagem enviada!');
-      } else {
-        toast.error('Erro ao enviar mensagem');
-      }
-    } catch (error) {
-      console.error('Failed to send notification', error);
-      toast.error('Erro de conexão');
-    }
+  const copyUrl = () => {
+    navigator.clipboard.writeText(webhookUrl);
+    setCopied(true);
+    toast.success('URL copiada!');
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const formatTime = (timestamp: string) => {
@@ -172,7 +157,6 @@ export default function NotificationReceiver() {
           <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-70">
             <Bell size={64} className="mb-4" />
             <p className="text-lg">Aguardando notificações...</p>
-            <p className="text-sm mt-2">Envie para: <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">/api/webhook/notification</code></p>
           </div>
         ) : (
           notifications.map((notification) => (
@@ -212,22 +196,20 @@ export default function NotificationReceiver() {
       </div>
 
       <div className="bg-white dark:bg-gray-800 p-4 border-t dark:border-gray-700 max-w-md mx-auto w-full">
-        <div className="flex gap-2">
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Testar envio de notificação..."
-            className="flex-1"
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={!message.trim()}
-            size="icon"
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Send size={18} />
-          </Button>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+            <Key size={14} />
+            <span>Integração via API (Webhook)</span>
+          </div>
+          <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded-lg text-xs font-mono break-all border border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2">
+            <span className="text-gray-500 dark:text-gray-400 truncate">{webhookUrl}</span>
+            <button onClick={copyUrl} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-gray-500">
+              {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Envie requisições POST com header <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">Authorization: Bearer SUA_API_KEY</code>.
+          </p>
         </div>
       </div>
     </div>
