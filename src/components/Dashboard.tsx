@@ -21,7 +21,7 @@ export default function Dashboard() {
 
   const fetchMetrics = useCallback(async (p: string, s: string) => {
     setLoading(true);
-    setData(null); // Garante que dados antigos não apareçam misturados
+    setData(null); 
     try {
       const res = await fetch(`/api/meta/metrics?period=${p}&source=${s}`);
       const json = await res.json();
@@ -36,10 +36,6 @@ export default function Dashboard() {
   useEffect(() => {
     fetchMetrics(period, source);
   }, [period, source, fetchMetrics]);
-
-  if (loading && !data) {
-    return <div className="flex items-center justify-center h-screen bg-[#0A0B0D] text-white">Carregando dados...</div>;
-  }
 
   const campaigns = data?.campaigns || [];
   const daily = data?.daily || [];
@@ -72,6 +68,10 @@ export default function Dashboard() {
       default: return 'Simulação (Mock)';
     }
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen bg-[#0A0B0D] text-white">Carregando dados...</div>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0A0B0D] text-white font-sans">

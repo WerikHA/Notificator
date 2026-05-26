@@ -16,8 +16,8 @@
         "cpm": 0,
         "ctr": 0,
         "cpc": 0,
-        "frequency": 1,
-        "conversions": 0,
+        "frequency": 0,
+        "conversions": null,
         "roas": 0,
         "videoView25": 0,
         "videoView75": 0
@@ -35,8 +35,8 @@
         "cpm": 0,
         "ctr": 0,
         "cpc": 0,
-        "frequency": 1,
-        "conversions": 0,
+        "frequency": 0,
+        "conversions": null,
         "roas": 0,
         "videoView25": 0,
         "videoView75": 0
@@ -54,8 +54,8 @@
         "cpm": 19.803404,
         "ctr": 0.986014,
         "cpc": 2.008431,
-        "frequency": 1,
-        "conversions": 0,
+        "frequency": 2.531372,
+        "conversions": 198,
         "roas": 0,
         "videoView25": 0,
         "videoView75": 0
@@ -73,8 +73,8 @@
         "cpm": 1.327717,
         "ctr": 0.047969,
         "cpc": 2.767857,
-        "frequency": 1,
-        "conversions": 0,
+        "frequency": 1.772575,
+        "conversions": 1,
         "roas": 0,
         "videoView25": 0,
         "videoView75": 0
@@ -92,8 +92,8 @@
         "cpm": 11.792188,
         "ctr": 1.672198,
         "cpc": 0.705191,
-        "frequency": 1,
-        "conversions": 0,
+        "frequency": 1.617759,
+        "conversions": 77,
         "roas": 0,
         "videoView25": 0,
         "videoView75": 0
@@ -111,8 +111,8 @@
         "cpm": 20.57538,
         "ctr": 2.531177,
         "cpc": 0.812878,
-        "frequency": 1,
-        "conversions": 0,
+        "frequency": 1.725762,
+        "conversions": 59,
         "roas": 0,
         "videoView25": 0,
         "videoView75": 0
@@ -120,230 +120,198 @@
     ],
     "daily": [
       {
+        "date": "26 de abr.",
+        "spend": 0,
+        "messages": null,
+        "impressions": 0,
+        "clicks": 0,
+        "reach": 0
+      },
+      {
+        "date": "28 de abr.",
+        "spend": 20.88,
+        "messages": 8,
+        "impressions": 1270,
+        "clicks": 19,
+        "reach": 996
+      },
+      {
+        "date": "29 de abr.",
+        "spend": 41.68,
+        "messages": 14,
+        "impressions": 1999,
+        "clicks": 29,
+        "reach": 1505
+      },
+      {
+        "date": "30 de abr.",
+        "spend": 41.43,
+        "messages": 22,
+        "impressions": 2390,
+        "clicks": 37,
+        "reach": 1890
+      },
+      {
+        "date": "01 de mai.",
+        "spend": 68.4,
+        "messages": 18,
+        "impressions": 4401,
+        "clicks": 27,
+        "reach": 3403
+      },
+      {
         "date": "02 de mai.",
-        "spend": 106,
-        "messages": 15,
-        "impressions": 9523,
-        "clicks": 34,
-        "reach": 12816
+        "spend": 41.78,
+        "messages": 6,
+        "impressions": 2299,
+        "clicks": 21,
+        "reach": 1758
       },
       {
         "date": "03 de mai.",
-        "spend": 83,
-        "messages": 9,
-        "impressions": 10023,
-        "clicks": 49,
-        "reach": 10522
+        "spend": 46.78,
+        "messages": 19,
+        "impressions": 2209,
+        "clicks": 25,
+        "reach": 1637
       },
       {
         "date": "04 de mai.",
-        "spend": 97,
-        "messages": 6,
-        "impressions": 9388,
-        "clicks": 21,
-        "reach": 9264
+        "spend": 105.53,
+        "messages": 22,
+        "impressions": 32174,
+        "clicks": 40,
+        "reach": 30999
       },
       {
         "date": "05 de mai.",
-        "spend": 74,
-        "messages": 20,
-        "impressions": 21892,
-        "clicks": 18,
-        "reach": 10962
+        "spend": 106.24,
+        "messages": 24,
+        "impressions": 38518,
+        "clicks": 60,
+        "reach": 37989
       },
       {
         "date": "06 de mai.",
-        "spend": 37,
-        "messages": 15,
-        "impressions": 13072,
-        "clicks": 68,
-        "reach": 4060
+        "spend": 98.2,
+        "messages": 17,
+        "impressions": 37597,
+        "clicks": 51,
+        "reach": 35517
       },
       {
         "date": "07 de mai.",
-        "spend": 117,
-        "messages": 9,
-        "impressions": 8462,
-        "clicks": 83,
-        "reach": 17815
+        "spend": 88.37,
+        "messages": 10,
+        "impressions": 35604,
+        "clicks": 28,
+        "reach": 34530
       },
       {
         "date": "08 de mai.",
-        "spend": 44,
-        "messages": 17,
-        "impressions": 8682,
-        "clicks": 81,
-        "reach": 6597
+        "spend": 89.64,
+        "messages": 8,
+        "impressions": 37508,
+        "clicks": 28,
+        "reach": 36385
       },
       {
         "date": "09 de mai.",
-        "spend": 50,
-        "messages": 9,
-        "impressions": 12364,
-        "clicks": 74,
-        "reach": 5581
+        "spend": 98.53,
+        "messages": 8,
+        "impressions": 46128,
+        "clicks": 35,
+        "reach": 46128
       },
       {
         "date": "10 de mai.",
-        "spend": 78,
-        "messages": 8,
-        "impressions": 9340,
-        "clicks": 18,
-        "reach": 15939
+        "spend": 105.97,
+        "messages": 12,
+        "impressions": 41072,
+        "clicks": 37,
+        "reach": 39590
       },
       {
         "date": "11 de mai.",
-        "spend": 96,
-        "messages": 1,
-        "impressions": 19934,
-        "clicks": 70,
-        "reach": 7061
+        "spend": 48.06,
+        "messages": 11,
+        "impressions": 12461,
+        "clicks": 14,
+        "reach": 12172
       },
       {
         "date": "12 de mai.",
-        "spend": 64,
-        "messages": 18,
-        "impressions": 6134,
-        "clicks": 90,
-        "reach": 8670
-      },
-      {
-        "date": "13 de mai.",
-        "spend": 114,
-        "messages": 9,
-        "impressions": 11906,
-        "clicks": 61,
-        "reach": 13958
+        "spend": 0,
+        "messages": null,
+        "impressions": 0,
+        "clicks": 0,
+        "reach": 0
       },
       {
         "date": "14 de mai.",
-        "spend": 60,
-        "messages": 8,
-        "impressions": 22186,
-        "clicks": 96,
-        "reach": 12945
-      },
-      {
-        "date": "15 de mai.",
-        "spend": 50,
-        "messages": 16,
-        "impressions": 6451,
-        "clicks": 51,
-        "reach": 17346
-      },
-      {
-        "date": "16 de mai.",
-        "spend": 52,
-        "messages": 3,
-        "impressions": 12433,
-        "clicks": 70,
-        "reach": 10712
-      },
-      {
-        "date": "17 de mai.",
-        "spend": 114,
-        "messages": 18,
-        "impressions": 16620,
-        "clicks": 55,
-        "reach": 13084
-      },
-      {
-        "date": "18 de mai.",
-        "spend": 94,
-        "messages": 1,
-        "impressions": 12310,
-        "clicks": 58,
-        "reach": 12436
-      },
-      {
-        "date": "19 de mai.",
-        "spend": 83,
-        "messages": 19,
-        "impressions": 11258,
-        "clicks": 66,
-        "reach": 5536
-      },
-      {
-        "date": "20 de mai.",
-        "spend": 39,
-        "messages": 17,
-        "impressions": 5556,
-        "clicks": 38,
-        "reach": 12262
+        "spend": 0,
+        "messages": null,
+        "impressions": 0,
+        "clicks": 0,
+        "reach": 0
       },
       {
         "date": "21 de mai.",
-        "spend": 95,
-        "messages": 18,
-        "impressions": 24799,
-        "clicks": 50,
-        "reach": 12710
+        "spend": 52.66,
+        "messages": 27,
+        "impressions": 3426,
+        "clicks": 86,
+        "reach": 2541
       },
       {
         "date": "22 de mai.",
-        "spend": 55,
-        "messages": 1,
-        "impressions": 13249,
-        "clicks": 65,
-        "reach": 14692
+        "spend": 210.95,
+        "messages": 78,
+        "impressions": 13504,
+        "clicks": 262,
+        "reach": 8692
       },
       {
         "date": "23 de mai.",
-        "spend": 28,
-        "messages": 10,
-        "impressions": 12725,
-        "clicks": 13,
-        "reach": 5190
+        "spend": 87.79,
+        "messages": 28,
+        "impressions": 6837,
+        "clicks": 119,
+        "reach": 5292
       },
       {
         "date": "24 de mai.",
-        "spend": 24,
-        "messages": 20,
-        "impressions": 8995,
-        "clicks": 103,
-        "reach": 4299
-      },
-      {
-        "date": "25 de mai.",
-        "spend": 119,
-        "messages": 16,
-        "impressions": 7913,
-        "clicks": 12,
-        "reach": 7110
-      },
-      {
-        "date": "26 de mai.",
-        "spend": 92,
-        "messages": 12,
-        "impressions": 8230,
-        "clicks": 84,
-        "reach": 5567
+        "spend": 0,
+        "messages": 3,
+        "impressions": 0,
+        "clicks": 0,
+        "reach": 0
       }
     ],
     "totals": {
       "spend": 1352.89,
-      "messages": 335,
-      "clicks": 918,
-      "reach": 171074,
       "impressions": 319397,
+      "reach": 171074,
+      "clicks": 918,
+      "messages": 335,
+      "frequency": 1.867011,
+      "cpm": 4.235763,
+      "cpc": 1.473736,
+      "ctr": 0.287417,
+      "costPerMessage": 4.038477611940299,
+      "messageRate": 36.492374727668846,
+      "vvr": 0,
       "spendChange": 0,
       "messagesChange": 0,
       "clicksChange": 0,
       "reachChange": 0,
       "impressionsChange": 0,
-      "funnelImpressions": 316000,
-      "funnelReach": 171000,
-      "funnelClicks": 280,
-      "funnelMessages": 145,
-      "funnelVideo25": 8523,
-      "funnelVideo75": 1827,
-      "ctr": 0.287417,
-      "messageRate": 51.79,
-      "vvr": 8.54,
-      "frequency": 1.867011,
-      "cpm": 4.235763,
-      "costPerMessage": 8.9,
-      "cpc": 1.473736
+      "funnelImpressions": 319397,
+      "funnelReach": 171074,
+      "funnelClicks": 918,
+      "funnelMessages": 335,
+      "funnelVideo25": 0,
+      "funnelVideo75": 0
     }
   }
 }
