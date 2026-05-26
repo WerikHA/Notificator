@@ -15,13 +15,6 @@ interface Client {
 
 interface DbSchema {
   examples: { id: number; name: string; createdAt: string }[];
-  notifications: { 
-    id: number; 
-    message: string; 
-    timestamp: string;
-    source?: string;
-    title?: string;
-  }[];
   metrics?: {
     campaigns: any[];
     daily: any[];
@@ -54,7 +47,6 @@ export async function getDb(): Promise<Low<DbSchema>> {
     const adapter = new JSONFile<DbSchema>(DB_FULL_PATH);
     dbInstance = new Low<DbSchema>(adapter, { 
       examples: [],
-      notifications: [],
       metrics: { campaigns: [], daily: [], totals: {} },
       clients: []
     });
