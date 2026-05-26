@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import SparklineChart from '@/components/ui/SparklineChart';
 import FunnelChart from '@/components/FunnelChart';
-import { Wallet, MousePointer, TrendingUp, Eye, MessageSquare, BarChart3, Users, ChevronDown, Download, Settings } from 'lucide-react';
+import { Wallet, MousePointer, TrendingUp, Eye, MessageSquare, BarChart3, Users, ChevronDown, Download, Settings, Calendar } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -14,12 +14,13 @@ const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 
 const formatNumber = (val: number) => new Intl.NumberFormat('pt-BR').format(val);
 
 export default function Dashboard() {
-  const [period, setPeriod] = useState('25d');
+  const [period, setPeriod] = useState('30d');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/meta/metrics')
+    setLoading(true);
+    fetch(`/api/meta/metrics?period=${period}`)
       .then(res => res.json())
       .then(json => {
         setData(json);
@@ -29,31 +30,28 @@ export default function Dashboard() {
         console.error('Failed to fetch metrics', err);
         setLoading(false);
       });
-  }, []);
+  }, [period]);
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen bg-[#0A0B0D] text-white">Carregando dashboard...</div>;
+    return <div className="flex items-center justify-center h-screen bg-[#0A0B0D] text-white">Carregando dados...</div>;
   }
 
   const campaigns = data?.campaigns || [];
   const daily = data?.daily || [];
   const totals = data?.totals || {};
 
-  // Gera sparklines dinamicamente a partir dos dados diários
   const sparklineDataSpend = daily.map((d: any) => d.spend || 0);
   const sparklineDataMessages = daily.map((d: any) => d.messages || 0);
   const sparklineDataClicks = daily.map((d: any) => d.clicks || 0);
   const sparklineDataReach = daily.map((d: any) => d.reach || 0);
   const sparklineDataImpressions = daily.map((d: any) => d.impressions || 0);
 
-  // Dados para o gráfico de área (Investimento vs Mensagens)
   const areaData = daily.map((d: any) => ({
     name: d.date,
     Investimento: d.spend,
     Mensagens: d.messages,
   }));
 
-  // Dados para o gráfico de rosca (Melhores Anúncios)
   const pieData = campaigns.map((c: any) => ({
     name: c.adName ? (c.adName.length > 15 ? c.adName.substring(0, 15) + '...' : c.adName) : 'Desconhecido',
     value: c.messages || 0,
@@ -96,14 +94,15 @@ export default function Dashboard() {
                </SelectContent>
              </Select>
 
-             <Select defaultValue="date">
+             <Select value={period} onValueChange={setPeriod}>
                <SelectTrigger className="w-[200px] h-8 bg-[#242526] border-gray-700 text-sm text-gray-300">
-                 <CalendarIcon size={14} className="mr-2" />
-                 <SelectValue placeholder="1 de mai. de 2026 - 25 de mai." />
+                 <Calendar size={14} className="mr-2" />
+                 <SelectValue placeholder="Selecionar período" />
                </SelectTrigger>
                <SelectContent>
                  <SelectItem value="7d">Últimos 7 dias</SelectItem>
-                 <SelectItem value="25d">1 de mai. de 2026 - 25 de mai.</SelectItem>
+                 <SelectItem value="15d">Últimos 15 dias</SelectItem>
+                 <SelectItem value="30d">Últimos 30 dias</SelectItem>
                </SelectContent>
              </Select>
           </div>

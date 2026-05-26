@@ -2,22 +2,45 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/database';
 import { mockCampaigns, mockDailyMetrics, totalMetrics } from '@/lib/mock-meta-data';
 
+// Função para calcular o range de datas para a Meta API
+function getDateRangeForMeta(period: string) {
+  const now = new Date();
+  let since = new Date();
+
+  switch (period) {
+    case '7d':
+      since.setDate(now.getDate() - 7);
+      break;
+    case '15d':
+      since.setDate(now.getDate() - 15);
+      break;
+    case '30d':
+      since.setDate(now.getDate() - 30);
+      break;
+    default:
+      since.setDate(now.getDate() - 30);
+  }
+
+  const formatDate = (date: Date) => date.toISOString().split('T')[0];
+  return `{"since":"${formatDate(since)}","until":"${formatDate(now)}"}`;
+}
+
 // Função auxiliar para buscar dados da Meta Ads API
-async function fetchMetaAdsData() {
+async function fetchMetaAdsData(period: string = '30d') {
   const token = process.env.META_ADS_ACCESS_TOKEN;
   const accountId = process.env.META_ADS_ACCOUNT_ID;
 
   // Se as variáveis não estiverem configuradas, retorna null para usar o fallback (mock)
   if (!token || !accountId) return null;
 
-  // Garante que o ID da conta tenha o prefixo 'act_'
   const formattedId = accountId.startsWith('act_') ? accountId : `act_${accountId}`;
   const baseUrl = `https://graph.facebook.com/v19.0/${formattedId}/insights`;
+  const timeRange = getDateRangeForMeta(period);
 
   try {
     // 1. Buscar Totais (Nível da Conta)
     const totalsRes = await fetch(
-      `${baseUrl}?access_token=${token}&level=account&fields=spend,impressions,reach,clicks,frequency,actions,cpm,cpc,ctr&date_preset=last_30d`
+      `${baseUrl}?access_token=${token}&level=account&fields=spend,impressions,reach,clicks,frequency,actions,cpm,cpc,ctr&time_range=${encodeURIComponent(timeRange)}`
     );
     const totalsJson = await totalsRes.json();
 
@@ -30,10 +53,8 @@ async function fetchMetaAdsData() {
     // A Meta retorna as mensagens dentro do array 'actions'
     const msgs = t.actions?.find((a: any) => a.action_type === 'onsite_conversion.messaging_conversation_started')?.value || 0;
 
-    // Mesclamos os dados reais com os mockados para preencher campos calculados (como variação %) 
-    // que exigiriam comparações complexas de datas para calcular na hora.
     const finalTotals = {
-      ...totalMetrics, // Base mockada para garantir que a UI não quebre com campos vazios
+      ...totalMetrics,
       spend: parseFloat(t.spend || 0),
       impressions: parseInt(t.impressions || 0),
       reach: parseInt(t.reach || 0),
@@ -43,13 +64,12 @@ async function fetchMetaAdsData() {
       cpm: parseFloat(t.cpm || 0),
       cpc: parseFloat(t.cpc || 0),
       ctr: parseFloat(t.ctr || 0),
-      // Resetar variações para 0 pois não estamos calculando histórico neste momento
       spendChange: 0, messagesChange: 0, clicksChange: 0, reachChange: 0, impressionsChange: 0,
     };
 
     // 2. Buscar Campanhas
     const campRes = await fetch(
-      `${baseUrl}?access_token=${token}&level=campaign&fields=campaign_name,spend,impressions,reach,clicks,actions&date_preset=last_30d&limit=10`
+      `${baseUrl}?access_token=${token}&level=campaign&fields=campaign_name,spend,impressions,reach,clicks,actions&time_range=${encodeURIComponent(timeRange)}&limit=50`
     );
     const campJson = await campRes.json();
 
@@ -82,7 +102,7 @@ async function fetchMetaAdsData() {
     return {
       totals: finalTotals,
       campaigns: finalCampaigns.length > 0 ? finalCampaigns : mockCampaigns,
-      daily: mockDailyMetrics, // Mantemos o diário mockado para evitar lentidão na renderização
+      daily: mockDailyMetrics, 
       status: 'live-meta'
     };
 
@@ -94,6 +114,9 @@ async function fetchMetaAdsData() {
 
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period') || '30d';
+
     const db = await getDb();
 
     // 1. Se houver dados enviados manualmente (via POST), eles têm prioridade
@@ -102,9 +125,8 @@ export async function GET(request: NextRequest) {
     }
 
     // 2. Tentar buscar da API da Meta (se variáveis de ambiente existirem)
-    const metaResult = await fetchMetaAdsData();
+    const metaResult = await fetchMetaAdsData(period);
     if (metaResult) {
-      // Salva no banco para cache (opcional, mas ajuda na performance)
       db.data.metrics = {
         campaigns: metaResult.campaigns,
         daily: metaResult.daily,
@@ -132,7 +154,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const db = await getDb();
 
-    // Permite sobrescrever os dados da API com dados manuais
     db.data.metrics = {
       campaigns: body.campaigns || [],
       daily: body.daily || [],
