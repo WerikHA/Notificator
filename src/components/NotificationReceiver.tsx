@@ -52,7 +52,7 @@ export default function NotificationReceiver() {
           const hasExternalAlert = newMessages.some(n => n.source !== 'user');
           
           if (hasExternalAlert) {
-            playLoudAlert();
+            playMelodyAlert();
           }
           
           setNotifications(data);
@@ -79,33 +79,55 @@ export default function NotificationReceiver() {
     }
   };
 
-  const playLoudAlert = () => {
+  const playMelodyAlert = () => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
       
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 880; 
-      oscillator.type = 'square'; 
-      gainNode.gain.value = 1.0; 
-      
-      oscillator.start();
-      
+      // Melodia simples de 3 segundos (Dó-Mi-Sol-Dó agudo)
+      const notes = [
+        { freq: 523.25, start: 0, duration: 0.6 },    // C5
+        { freq: 659.25, start: 0.7, duration: 0.6 },  // E5
+        { freq: 783.99, start: 1.4, duration: 0.6 },  // G5
+        { freq: 1046.50, start: 2.1, duration: 0.9 }, // C6
+      ];
+
+      const now = audioContext.currentTime;
+
+      notes.forEach(note => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.frequency.value = note.freq;
+        osc.type = 'sine';
+        
+        // Envelope suave para evitar cliques
+        gain.gain.setValueAtTime(0, now + note.start);
+        gain.gain.linearRampToValueAtTime(0.25, now + note.start + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + note.start + note.duration);
+        
+        osc.start(now + note.start);
+        osc.stop(now + note.start + note.duration + 0.1);
+      });
+
+      // Fecha o contexto após exatamente 3 segundos
       setTimeout(() => {
-        oscillator.stop();
-        audioContext.close();
-      }, 1500); 
+        if (audioContext.state !== 'closed') {
+          audioContext.close();
+        }
+      }, 3000);
+      
     } catch (error) {
-      console.error('Audio play failed', error);
+      console.error('Melody play failed', error);
+      toast.error('Erro ao tocar notificação');
     }
   };
 
   const testAlert = () => {
-    playLoudAlert();
-    toast.info('Testando alerta sonoro');
+    playMelodyAlert();
+    toast.info('Testando melodia de alerta');
   };
 
   const copyUrl = () => {
