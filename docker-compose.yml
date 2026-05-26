@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   notification:
-    # Nome da imagem que será puxada do Docker Hub
-    image: ${DOCKERHUB_USERNAME}/${REPO_NAME}:latest
+    # Imagem correta gerada pelo GitHub Actions (GHCR)
+    image: ghcr.io/werikoliveira/notification-server:main
     container_name: notification-app
     hostname: notification-server
     
@@ -29,7 +29,7 @@ services:
       
     # Labels para o CasaOS identificar o App bonitinho na interface
     labels:
-      - "com CasaOS.description=Central de Notificações e Alertas"
+      - "com.casaos.description=Central de Notificações e Alertas"
       - "com.casaos.icon=https://cdn-icons-png.flaticon.com/512/3238/3238468.png"
       - "com.casaos.category=Utilities"
       - "com.casaos.port=3000"

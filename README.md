@@ -8,8 +8,8 @@ Uma interface simples e elegante para receber alertas e notificações via Webho
 
 - 📱 **Interface estilo Chat**: Todas as notificações organizadas em tempo real.
 - 🔔 **Alerta Sonoro**: Toca um som de alerta alto quando uma nova notificação chega (ótimo para quando você não está olhando a tela).
-- 🌐 **Compatível com tudo**: Receba notificações de qualquer lugar via Webhook (curl, n8n, Python, scripts de backup, etc).
-- 🏠 **Pronto para CasaOS**: Instalação fácil com Docker Compose e interface amigável.
+-  **Compatível com tudo**: Receba notificações de qualquer lugar via Webhook (curl, n8n, Python, scripts de backup, etc).
+-  **Pronto para CasaOS**: Instalação fácil com Docker Compose e interface amigável.
 
 ---
 
@@ -27,7 +27,7 @@ version: '3.8'
 
 services:
   notification:
-    image: werikoliveira/notification:latest
+    image: ghcr.io/werikoliveira/notification-server:main
     container_name: notification-app
     restart: unless-stopped
     ports:
@@ -61,7 +61,7 @@ Você pode ajustar o comportamento do app alterando as variáveis de ambiente no
 
 ---
 
-## 📡 Como enviar notificações
+##  Como enviar notificações
 
 O aplicativo funciona recebendo requisições **POST**. Você pode testar usando o `curl` no seu terminal ou integrando com seus scripts.
 
