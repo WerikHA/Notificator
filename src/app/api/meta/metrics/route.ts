@@ -87,7 +87,6 @@ async function fetchMetaAdsData(period: string = '30d') {
     const reach = parseInt(t.reach || '0');
     const clicks = parseInt(t.clicks || '0');
 
-    // Constrói totais apenas com dados reais, calculando métricas derivadas
     const finalTotals = {
       spend,
       impressions,
@@ -143,7 +142,7 @@ async function fetchMetaAdsData(period: string = '30d') {
       });
     }
 
-    // 3. Buscar Dados Diários (agora busca da API real em vez de usar mock)
+    // 3. Buscar Dados Diários
     const dailyRes = await fetch(
       `${baseUrl}?access_token=${token}&level=account&fields=spend,impressions,reach,clicks,actions,results&time_range=${encodeURIComponent(timeRange)}&time_increment=1`
     );
@@ -182,9 +181,11 @@ export async function GET(request: NextRequest) {
 
     const db = await getDb();
 
+    // 1. Modo Manual: Retorna estritamente o que está salvo no banco
     if (source === 'manual') {
-      if (db.data?.metrics && db.data.metrics.campaigns.length > 0) {
-        return NextResponse.json({ ...db.data.metrics, source: 'manual' });
+      const dbMetrics = db.data?.metrics;
+      if (dbMetrics && dbMetrics.campaigns.length > 0) {
+        return NextResponse.json({ ...dbMetrics, source: 'manual' });
       }
       return NextResponse.json({ 
         campaigns: [], daily: [], totals: {}, 
@@ -193,9 +194,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // 2. Modo Meta: Força busca na API, ignora cache do banco para evitar dados velhos
     if (source === 'meta') {
       const metaResult = await fetchMetaAdsData(period);
       if (metaResult.status === 'live-meta') {
+        // Salva os dados frescos no banco
         db.data.metrics = {
           campaigns: metaResult.campaigns || [],
           daily: metaResult.daily || [],
@@ -212,11 +215,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Fallback Automático
-    if (db.data?.metrics && db.data.metrics.campaigns.length > 0) {
-      return NextResponse.json({ ...db.data.metrics, source: 'manual' });
-    }
-
+    // 3. Modo Automático (Auto): Tenta API -> Se falhar usa DB -> Se não tem DB usa Mock
     const metaResult = await fetchMetaAdsData(period);
     if (metaResult.status === 'live-meta') {
       db.data.metrics = {
@@ -228,6 +227,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ...metaResult, source: 'meta' });
     }
 
+    // Fallback para dados manuais salvos
+    if (db.data?.metrics && db.data.metrics.campaigns.length > 0) {
+      return NextResponse.json({ ...db.data.metrics, source: 'manual' });
+    }
+
+    // Fallback Final para dados simulados
     return NextResponse.json({
       campaigns: mockCampaigns,
       daily: mockDailyMetrics,

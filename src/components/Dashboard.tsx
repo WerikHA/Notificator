@@ -15,12 +15,13 @@ const formatNumber = (val: number) => new Intl.NumberFormat('pt-BR').format(val)
 
 export default function Dashboard() {
   const [period, setPeriod] = useState('30d');
-  const [source, setSource] = useState('auto'); // 'auto', 'manual', 'meta'
+  const [source, setSource] = useState('auto');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchMetrics = useCallback(async (p: string, s: string) => {
     setLoading(true);
+    setData(null); // Garante que dados antigos não apareçam misturados
     try {
       const res = await fetch(`/api/meta/metrics?period=${p}&source=${s}`);
       const json = await res.json();
@@ -154,7 +155,6 @@ export default function Dashboard() {
       </header>
 
       <main className="flex-1 p-4 max-w-[1600px] mx-auto w-full space-y-4 overflow-y-auto">
-        {/* Feedback de Erro ou Configuração */}
         {data?.status === 'config-required' && (
           <div className="bg-blue-900/30 border border-blue-800 p-4 rounded text-sm text-blue-200">
             <strong>Configuração necessária:</strong> Adicione as variáveis `META_ADS_ACCESS_TOKEN` e `META_ADS_ACCOUNT_ID` no seu ambiente para ativar a integração automática.
