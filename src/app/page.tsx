@@ -1,18 +1,45 @@
-import Dashboard from '@/components/Dashboard';
-import Link from 'next/link';
-import { Shield } from 'lucide-react';
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import LoginForm from '@/components/admin/LoginForm';
+import AdminPage from '@/app/admin/page';
 
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-background relative">
-      <Link 
-        href="/admin"
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full shadow-lg transition-colors"
-      >
-        <Shield size={16} />
-        <span className="text-sm font-medium">Admin</span>
-      </Link>
-      <Dashboard />
-    </main>
-  );
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/admin/check');
+      if (res.ok) {
+        setAuthenticated(true);
+      } else {
+        setAuthenticated(false);
+      }
+    } catch {
+      setAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0A0B0D] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
+
+  if (!authenticated) {
+    return <LoginForm onSuccess={() => setAuthenticated(true)} />;
+  }
+
+  return <AdminPage />;
 }

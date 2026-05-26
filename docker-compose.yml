@@ -14,6 +14,9 @@ services:
       - DATABASE_DIR=/app/data
       # Chave para proteger o recebimento de notificações via Webhook
       - API_SECRET_KEY=sua_chave_secreta_aqui
+      # Credenciais do Admin
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin123
       # Configurações para integração com Meta Ads (Dashboard)
       - META_ADS_ACCESS_TOKEN=sua_chave_aqui
       - META_ADS_ACCOUNT_ID=sua_conta_aqui

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Plus, RefreshCw, Shield } from 'lucide-react';
+import { Plus, RefreshCw, Shield, LogOut } from 'lucide-react';
 import ClientList from '@/components/admin/ClientList';
 import ClientForm from '@/components/admin/ClientForm';
 
@@ -22,6 +23,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const router = useRouter();
 
   const fetchClients = useCallback(async () => {
     setLoading(true);
@@ -58,6 +60,16 @@ export default function AdminPage() {
     setEditingClient(null);
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/auth', { method: 'DELETE' });
+      toast.success('Logout realizado!');
+      window.location.href = '/';
+    } catch {
+      toast.error('Erro ao fazer logout');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0A0B0D] text-white">
       <header className="border-b border-gray-800 bg-[#18191A] p-4">
@@ -88,6 +100,15 @@ export default function AdminPage() {
             >
               <Plus size={16} className="mr-2" />
               Novo Cliente
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-gray-800"
+              onClick={handleLogout}
+              title="Sair"
+            >
+              <LogOut size={16} />
             </Button>
           </div>
         </div>

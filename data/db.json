@@ -46,22 +46,41 @@
         "campaignName": "[ENGAJA][CATANDUVA][VÍDEONOVO][ATÉ80%]",
         "adSetName": "Ver Detalhes",
         "adName": "Ver Detalhes",
-        "spend": 0,
-        "impressions": 0,
-        "clicks": 0,
-        "reach": 0,
-        "messages": null,
-        "cpm": 0,
-        "ctr": 0,
-        "cpc": 0,
-        "frequency": 0,
-        "conversions": null,
+        "spend": 652.74,
+        "impressions": 32961,
+        "clicks": 325,
+        "reach": 13021,
+        "messages": 109,
+        "cpm": 19.803404,
+        "ctr": 0.986014,
+        "cpc": 2.008431,
+        "frequency": 2.531372,
+        "conversions": 109,
         "roas": 0,
         "videoView25": 0,
         "videoView75": 0
       },
       {
         "id": "meta-3",
+        "campaignName": "[RECONHE][CATANDUVA][FEIRÃO][20 A 24]",
+        "adSetName": "Ver Detalhes",
+        "adName": "Ver Detalhes",
+        "spend": 348.75,
+        "impressions": 262669,
+        "clicks": 126,
+        "reach": 148185,
+        "messages": 1,
+        "cpm": 1.327717,
+        "ctr": 0.047969,
+        "cpc": 2.767857,
+        "frequency": 1.772575,
+        "conversions": 1,
+        "roas": 0,
+        "videoView25": 0,
+        "videoView75": 0
+      },
+      {
+        "id": "meta-4",
         "campaignName": "Camp - 2 feirão mulher omini",
         "adSetName": "Ver Detalhes",
         "adName": "Ver Detalhes",
@@ -80,7 +99,7 @@
         "videoView75": 0
       },
       {
-        "id": "meta-4",
+        "id": "meta-5",
         "campaignName": "Camp - 2 feirão mulher omini 23 / 05",
         "adSetName": "Ver Detalhes",
         "adName": "Ver Detalhes",
@@ -97,28 +116,145 @@
         "roas": 0,
         "videoView25": 0,
         "videoView75": 0
-      },
-      {
-        "id": "meta-5",
-        "campaignName": "Teste",
-        "adSetName": "Ver Detalhes",
-        "adName": "Ver Detalhes",
-        "spend": 0,
-        "impressions": 0,
-        "clicks": 0,
-        "reach": 0,
-        "messages": null,
-        "cpm": 0,
-        "ctr": 0,
-        "cpc": 0,
-        "frequency": 0,
-        "conversions": null,
-        "roas": 0,
-        "videoView25": 0,
-        "videoView75": 0
       }
     ],
     "daily": [
+      {
+        "date": "26 de abr.",
+        "spend": 0,
+        "messages": null,
+        "impressions": 0,
+        "clicks": 0,
+        "reach": 0
+      },
+      {
+        "date": "28 de abr.",
+        "spend": 20.88,
+        "messages": 4,
+        "impressions": 1270,
+        "clicks": 19,
+        "reach": 996
+      },
+      {
+        "date": "29 de abr.",
+        "spend": 41.68,
+        "messages": 7,
+        "impressions": 1999,
+        "clicks": 29,
+        "reach": 1505
+      },
+      {
+        "date": "30 de abr.",
+        "spend": 41.43,
+        "messages": 11,
+        "impressions": 2390,
+        "clicks": 37,
+        "reach": 1890
+      },
+      {
+        "date": "01 de mai.",
+        "spend": 68.4,
+        "messages": 12,
+        "impressions": 4401,
+        "clicks": 27,
+        "reach": 3403
+      },
+      {
+        "date": "02 de mai.",
+        "spend": 41.78,
+        "messages": 3,
+        "impressions": 2299,
+        "clicks": 21,
+        "reach": 1758
+      },
+      {
+        "date": "03 de mai.",
+        "spend": 46.78,
+        "messages": 13,
+        "impressions": 2209,
+        "clicks": 25,
+        "reach": 1637
+      },
+      {
+        "date": "04 de mai.",
+        "spend": 105.53,
+        "messages": 12,
+        "impressions": 32174,
+        "clicks": 40,
+        "reach": 30999
+      },
+      {
+        "date": "05 de mai.",
+        "spend": 106.24,
+        "messages": 12,
+        "impressions": 38518,
+        "clicks": 60,
+        "reach": 37989
+      },
+      {
+        "date": "06 de mai.",
+        "spend": 98.2,
+        "messages": 9,
+        "impressions": 37597,
+        "clicks": 51,
+        "reach": 35517
+      },
+      {
+        "date": "07 de mai.",
+        "spend": 88.37,
+        "messages": 6,
+        "impressions": 35604,
+        "clicks": 28,
+        "reach": 34530
+      },
+      {
+        "date": "08 de mai.",
+        "spend": 89.64,
+        "messages": 4,
+        "impressions": 37508,
+        "clicks": 28,
+        "reach": 36385
+      },
+      {
+        "date": "09 de mai.",
+        "spend": 98.53,
+        "messages": 4,
+        "impressions": 46128,
+        "clicks": 35,
+        "reach": 46128
+      },
+      {
+        "date": "10 de mai.",
+        "spend": 105.97,
+        "messages": 7,
+        "impressions": 41072,
+        "clicks": 37,
+        "reach": 39590
+      },
+      {
+        "date": "11 de mai.",
+        "spend": 48.06,
+        "messages": 6,
+        "impressions": 12461,
+        "clicks": 14,
+        "reach": 12172
+      },
+      {
+        "date": "12 de mai.",
+        "spend": 0,
+        "messages": null,
+        "impressions": 0,
+        "clicks": 0,
+        "reach": 0
+      },
+      {
+        "date": "14 de mai.",
+        "spend": 0,
+        "messages": null,
+        "impressions": 0,
+        "clicks": 0,
+        "reach": 0
+      },
       {
         "date": "21 de mai.",
         "spend": 52.66,
@@ -153,27 +289,27 @@
       }
     ],
     "totals": {
-      "spend": 351.4,
-      "impressions": 23767,
-      "reach": 13318,
-      "clicks": 467,
-      "messages": 69,
-      "frequency": 1.784577,
-      "cpm": 14.785206,
-      "cpc": 0.752463,
-      "ctr": 1.964909,
-      "costPerMessage": 5.092753623188406,
-      "messageRate": 14.775160599571734,
+      "spend": 1352.89,
+      "impressions": 319397,
+      "reach": 171074,
+      "clicks": 918,
+      "messages": 179,
+      "frequency": 1.867011,
+      "cpm": 4.235763,
+      "cpc": 1.473736,
+      "ctr": 0.287417,
+      "costPerMessage": 7.558044692737431,
+      "messageRate": 19.498910675381264,
       "vvr": 0,
       "spendChange": 0,
       "messagesChange": 0,
       "clicksChange": 0,
       "reachChange": 0,
       "impressionsChange": 0,
-      "funnelImpressions": 23767,
-      "funnelReach": 13318,
-      "funnelClicks": 467,
-      "funnelMessages": 69,
+      "funnelImpressions": 319397,
+      "funnelReach": 171074,
+      "funnelClicks": 918,
+      "funnelMessages": 179,
       "funnelVideo25": 0,
       "funnelVideo75": 0
     }
