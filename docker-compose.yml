@@ -1,26 +1,39 @@
 version: '3.8'
 
 services:
-  web:
-    # Substitua pelo seu usuário do Docker Hub e nome do repositório
+  notification:
+    # Nome da imagem que será puxada do Docker Hub
     image: ${DOCKERHUB_USERNAME}/${REPO_NAME}:latest
-    container_name: dyad-app-web
+    container_name: notification-app
+    hostname: notification-server
+    
+    # Reinicia automaticamente se o servidor cair (bom para CasaOS)
+    restart: unless-stopped
+    
     ports:
       - "3000:3000"
+      
+    # Mapeamento de volumes para persistência dos dados no CasaOS
     volumes:
-      - dyad_db_data:/app/data
+      # Mapeia a pasta data do container para uma pasta local chamada 'notification-data'
+      - ./data:/app/data
+      
     environment:
-      NODE_ENV: production
-      # Define o diretório onde o lowdb salvará o db.json
-      DATABASE_DIR: "/app/data"
-      # Chave de API para proteger o endpoint de webhook
-      API_SECRET_KEY: "minha-chave-secreta-super-segura"
-      # URLs opcionais para proxy de APIs externas
-      # EXTERNAL_API_URL_SERVICE1: ""
-      # EXTERNAL_API_URL_SERVICE2: ""
-      # WEATHER_API_URL: ""
-    restart: unless-stopped
+      - NODE_ENV=production
+      # Diretório interno onde o app salva o banco de dados
+      - DATABASE_DIR=/app/data
+      # Chave secreta para proteger o webhook (mude isso!)
+      - API_SECRET_KEY=minha-chave-secreta-super-segura
+      # Opcional: URLs de APIs externas
+      # - EXTERNAL_API_URL_SERVICE1=
+      
+    # Labels para o CasaOS identificar o App bonitinho na interface
+    labels:
+      - "com CasaOS.description=Central de Notificações e Alertas"
+      - "com.casaos.icon=https://cdn-icons-png.flaticon.com/512/3238/3238468.png"
+      - "com.casaos.category=Utilities"
+      - "com.casaos.port=3000"
 
-volumes:
-  dyad_db_data:
-    driver: local
+networks:
+  default:
+    name: notification-network
