@@ -13,6 +13,7 @@ interface Client {
   name: string;
   slug: string;
   metaAdsAccountId: string;
+  metaAdsAccessToken: string;
   createdAt: string;
   isActive: boolean;
 }
