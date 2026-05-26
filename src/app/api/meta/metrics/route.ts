@@ -24,27 +24,23 @@ function getDateRangeForMeta(period: string) {
   return `{"since":"${formatDate(since)}","until":"${formatDate(now)}"}`;
 }
 
-// Lista abrangente de action_types que representam mensagens na API da Meta
 const MESSAGE_ACTION_TYPES = [
   'total_messaging_connection',
   'onsite_conversion.messaging_conversation_started_7d',
   'onsite_conversion.total_messaging_connection',
   'messaging_conversation_started_24h',
   'messaging_conversation_started_7d',
-  'messaging_first_reply', // Às vezes conta como métrica de engajamento
+  'messaging_first_reply',
   'message_send'
 ];
 
-// Função robusta para extrair mensagens da API da Meta
 function extractMessages(data: any): number {
   let count = 0;
   let foundExplicitMessageAction = false;
   
-  // 1. Tenta encontrar e somar nas ações explícitas
   if (data.actions && Array.isArray(data.actions)) {
     data.actions.forEach((a: any) => {
       const type = a.action_type || '';
-      // Verifica se é um tipo de mensagem e soma
       if (MESSAGE_ACTION_TYPES.includes(type)) {
         count += parseInt(a.value || '0');
         foundExplicitMessageAction = true;
@@ -52,13 +48,7 @@ function extractMessages(data: any): number {
     });
   }
   
-  // 2. Fallback inteligente:
-  // Se não encontrou nenhuma ação específica de mensagem no array,
-  // assumimos que o campo 'results' (que é a otimização da campanha) é o número correto,
-  // APENAS SE a campanha for do tipo mensagem (geralmente inferido se results > 0 e actions for vazio ou genérico).
   if (!foundExplicitMessageAction && data.results) {
-     // Usamos results como fallback, mas com cautela.
-     // Na dúvida, se não há actions de mensagem, results é o melhor indicador de conversão.
      count = parseInt(data.results || '0');
   }
 
@@ -77,13 +67,12 @@ async function fetchMetaAdsData(period: string = '30d') {
   const baseUrl = `https://graph.facebook.com/v19.0/${formattedId}/insights`;
   const timeRange = getDateRangeForMeta(period);
 
-  // Adicionado 'results' para fallback de contagem
-  const fields = 'spend,impressions,reach,clicks,frequency,actions,results,cpm,cpc,ctr';
+  const baseFields = 'spend,impressions,reach,clicks,frequency,actions,results,cpm,cpc,ctr';
 
   try {
-    // 1. Buscar Totais (Nível da Conta)
+    // 1. Buscar Totais
     const totalsRes = await fetch(
-      `${baseUrl}?access_token=${token}&level=account&fields=${fields}&time_range=${encodeURIComponent(timeRange)}`
+      `${baseUrl}?access_token=${token}&level=account&fields=${baseFields}&time_range=${encodeURIComponent(timeRange)}`
     );
     const totalsJson = await totalsRes.json();
 
@@ -93,24 +82,37 @@ async function fetchMetaAdsData(period: string = '30d') {
 
     const t = totalsJson.data[0];
     const msgs = extractMessages(t);
+    const spend = parseFloat(t.spend || '0');
+    const impressions = parseInt(t.impressions || '0');
+    const reach = parseInt(t.reach || '0');
+    const clicks = parseInt(t.clicks || '0');
 
+    // Constrói totais apenas com dados reais, calculando métricas derivadas
     const finalTotals = {
-      ...totalMetrics,
-      spend: parseFloat(t.spend || 0),
-      impressions: parseInt(t.impressions || 0),
-      reach: parseInt(t.reach || 0),
-      clicks: parseInt(t.clicks || 0),
+      spend,
+      impressions,
+      reach,
+      clicks,
       messages: msgs,
-      frequency: parseFloat(t.frequency || 0),
-      cpm: parseFloat(t.cpm || 0),
-      cpc: parseFloat(t.cpc || 0),
-      ctr: parseFloat(t.ctr || 0),
+      frequency: parseFloat(t.frequency || '0'),
+      cpm: parseFloat(t.cpm || '0'),
+      cpc: parseFloat(t.cpc || '0'),
+      ctr: parseFloat(t.ctr || '0'),
+      costPerMessage: msgs > 0 ? spend / msgs : 0,
+      messageRate: clicks > 0 ? (msgs / clicks) * 100 : 0,
+      vvr: 0,
       spendChange: 0, messagesChange: 0, clicksChange: 0, reachChange: 0, impressionsChange: 0,
+      funnelImpressions: impressions,
+      funnelReach: reach,
+      funnelClicks: clicks,
+      funnelMessages: msgs,
+      funnelVideo25: 0,
+      funnelVideo75: 0,
     };
 
     // 2. Buscar Campanhas
     const campRes = await fetch(
-      `${baseUrl}?access_token=${token}&level=campaign&fields=campaign_name,${fields}&time_range=${encodeURIComponent(timeRange)}&limit=50`
+      `${baseUrl}?access_token=${token}&level=campaign&fields=campaign_name,${baseFields}&time_range=${encodeURIComponent(timeRange)}&limit=50`
     );
     const campJson = await campRes.json();
 
@@ -118,21 +120,22 @@ async function fetchMetaAdsData(period: string = '30d') {
     if (campJson.data && campJson.data.length > 0) {
       finalCampaigns = campJson.data.map((c: any, i: number) => {
          const campMsgs = extractMessages(c);
+         const campSpend = parseFloat(c.spend || '0');
          return {
           id: `meta-${i}`,
           campaignName: c.campaign_name,
           adSetName: 'Ver Detalhes',
-          adName: 'Ver Detalhes',
-          spend: parseFloat(c.spend || 0),
-          impressions: parseInt(c.impressions || 0),
-          clicks: parseInt(c.clicks || 0),
-          reach: parseInt(c.reach || 0),
+          adName: c.name || 'Ver Detalhes',
+          spend: campSpend,
+          impressions: parseInt(c.impressions || '0'),
+          clicks: parseInt(c.clicks || '0'),
+          reach: parseInt(c.reach || '0'),
           messages: campMsgs,
-          cpm: parseFloat(c.cpm || 0),
-          ctr: parseFloat(c.ctr || 0),
-          cpc: parseFloat(c.cpc || 0),
-          frequency: 1,
-          conversions: 0,
+          cpm: parseFloat(c.cpm || '0'),
+          ctr: parseFloat(c.ctr || '0'),
+          cpc: parseFloat(c.cpc || '0'),
+          frequency: parseFloat(c.frequency || '0'),
+          conversions: campMsgs,
           roas: 0,
           videoView25: 0,
           videoView75: 0,
@@ -140,10 +143,28 @@ async function fetchMetaAdsData(period: string = '30d') {
       });
     }
 
+    // 3. Buscar Dados Diários (agora busca da API real em vez de usar mock)
+    const dailyRes = await fetch(
+      `${baseUrl}?access_token=${token}&level=account&fields=spend,impressions,reach,clicks,actions,results&time_range=${encodeURIComponent(timeRange)}&time_increment=1`
+    );
+    const dailyJson = await dailyRes.json();
+    
+    let finalDaily: any[] = [];
+    if (dailyJson.data && dailyJson.data.length > 0) {
+      finalDaily = dailyJson.data.map((d: any) => ({
+        date: d.date_start ? new Date(d.date_start).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '',
+        spend: parseFloat(d.spend || '0'),
+        messages: extractMessages(d),
+        impressions: parseInt(d.impressions || '0'),
+        clicks: parseInt(d.clicks || '0'),
+        reach: parseInt(d.reach || '0'),
+      })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }
+
     return {
       totals: finalTotals,
-      campaigns: finalCampaigns.length > 0 ? finalCampaigns : mockCampaigns,
-      daily: mockDailyMetrics, 
+      campaigns: finalCampaigns,
+      daily: finalDaily, 
       status: 'live-meta'
     };
 
@@ -191,6 +212,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Fallback Automático
     if (db.data?.metrics && db.data.metrics.campaigns.length > 0) {
       return NextResponse.json({ ...db.data.metrics, source: 'manual' });
     }
