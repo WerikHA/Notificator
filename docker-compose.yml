@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   web:
-    # Substitua pelo seu repositório real após o push no GitHub
-    image: ghcr.io/${GITHUB_USERNAME}/${REPO_NAME}:latest
+    # Substitua pelo seu usuário do Docker Hub e nome do repositório
+    image: ${DOCKERHUB_USERNAME}/${REPO_NAME}:latest
     container_name: dyad-app-web
     ports:
       - "3000:3000"
