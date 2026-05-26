@@ -1,143 +1,102 @@
-# Template Docker Next.js Dyad
+# 📢 Central de Notificações
 
-Este template fornece um boilerplate robusto para construir e implantar aplicações Next.js totalmente containerizadas com Docker, utilizando o **Docker Hub** para hospedagem de imagens e um **banco de dados JSON puro em JavaScript (`lowdb`)** como backend. Também inclui configuração para proxy de API do Next.js para lidar com integrações externas e problemas de CORS sem complicações.
+Uma interface simples e elegante para receber alertas e notificações via Webhook. Ideal para monitorar servidores, receber avisos de automações ou integrar com qualquer sistema que envie requisições HTTP.
+
+![Screenshot do App](https://via.placeholder.com/800x400.png?text=Central+de+Notificações)
 
 ## ✨ Funcionalidades
 
-- **Next.js**: Um framework React poderoso para construir aplicações web full-stack.
-  
-- **Docker & Docker Compose**: Containerize sua aplicação para garantir ambientes consistentes entre desenvolvimento, teste e produção. Execute toda a stack localmente com um único comando.
-  
-- **Docker Hub**: Automatize a construção de suas imagens Docker e envie-as para o Docker Hub usando GitHub Actions.
-  
-- **Banco de Dados JSON (`lowdb`)**: Um banco de dados leve baseado em arquivo JSON que roda inteiramente em JavaScript. Isso simplifica a configuração do banco, eliminando problemas com dependências nativas e comandos manuais de migração.
-  
-- **Proxy de API Next.js (Rewrites)**: Configuração integrada para proxy de requisições para APIs externas a partir do backend Next.js, ajudando a contornar restrições de CORS no lado do cliente.
-  
-- **Pronto para Dyad**: Otimizado para implantação na plataforma Dyad.
-  
+- 📱 **Interface estilo Chat**: Todas as notificações organizadas em tempo real.
+- 🔔 **Alerta Sonoro**: Toca um som de alerta alto quando uma nova notificação chega (ótimo para quando você não está olhando a tela).
+- 🌐 **Compatível com tudo**: Receba notificações de qualquer lugar via Webhook (curl, n8n, Python, scripts de backup, etc).
+- 🏠 **Pronto para CasaOS**: Instalação fácil com Docker Compose e interface amigável.
 
-## 🚀 Começando
+---
 
-Para usar este template, siga estes passos:
+## 🚀 Como Instalar
 
-### Pré-requisitos
+### Opção 1: CasaOS (Recomendado)
 
-Antes de começar, certifique-se de ter os seguintes itens instalados:
+Se você usa o CasaOS no seu servidor:
 
-- **Git**: Para controle de versão.
-  
-- **Node.js**: (v18 ou superior recomendado) e npm ou Yarn.
-  
-- **Docker & Docker Compose**: Para construir e executar containers.
-  
-- **Conta GitHub**: Para usar o GitHub Actions.
-  
-- **Conta Docker Hub**: Para hospedar suas imagens Docker.
-  
+1. Abra o terminal ou acesse a área de "App Store" > "Personalizada".
+2. Cole o código abaixo ou faça o upload do arquivo `docker-compose.yml`.
 
-### 1. Crie Seu Projeto a Partir Deste Template
+```yaml
+version: '3.8'
 
-1. **Use Este Template**: No GitHub, navegue até o repositório do template e clique no botão verde "Use this template" -> "Create a new repository".
-  
-2. **Clone Seu Novo Repositório**:
-  
-  ```bash
-  git clone https://github.com/seu-usuario/nome-do-novo-repositorio.git
-  cd nome-do-novo-repositorio
-  ```
-  
-
-### 2. Configuração do Ambiente
-
-Copie o arquivo de exemplo de variáveis de ambiente:
-
-```bash
-cp .env.example .env
+services:
+  notification:
+    image: werikoliveira/notification:latest
+    container_name: notification-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - API_SECRET_KEY=sua_chave_secreta_aqui
 ```
 
-Agora, abra o arquivo `.env` recém-criado e configure suas definições:
+3. Clique em **Instalar**. O app estará disponível em `http://seu-ip:3000`.
 
-- `DOCKERHUB_USERNAME`: Seu nome de usuário no Docker Hub.
-- `REPO_NAME`: Nome do repositório (geralmente o mesmo do GitHub).
-- `API_SECRET_KEY`: Chave secreta para proteger o endpoint de webhook.
-- `DATABASE_DIR`: Opcional. Diretório onde o arquivo `db.json` será armazenado (padrão: `./data`).
-- `EXTERNAL_API_URL_*`: URLs para proxy de APIs externas (opcionais).
+### Opção 2: Docker Compose (Manual)
 
-## 🐳 Desenvolvimento Local com Docker Compose
+1. Crie um arquivo `docker-compose.yml` com o conteúdo acima.
+2. Execute:
+   ```bash
+   docker compose up -d
+   ```
 
-1. **Execute com Docker Compose**:
-  
-  ```bash
-  docker compose up -d
-  ```
-  
-  Este comando:
-  
-  - Inicia sua aplicação Next.js em um container Docker.
-    
-  - Mapeia a porta `3000` do container para `3000` na sua máquina host.
-    
-  - Cria um volume Docker (`dyad_db_data`) para persistir seu banco de dados JSON.
-    
-2. **Acesse Sua Aplicação**: `http://localhost:3000`
+---
 
-3. **Pare a Aplicação**:
-  
-  ```bash
-  docker compose down
-  ```
-  
-  Para resetar o banco de dados: `docker compose down -v`
+## ⚙️ Configuração
 
-## ☁️ CI/CD com GitHub Actions e Docker Hub
+Você pode ajustar o comportamento do app alterando as variáveis de ambiente no seu `docker-compose.yml`:
 
-Este template está configurado para construir e enviar automaticamente sua imagem Docker para o Docker Hub.
+| Variável | O que faz | Exemplo |
+| :--- | :--- | :--- |
+| `API_SECRET_KEY` | **Obrigatório**. A senha para quem quiser enviar notificações para você. | `minha-senha-123` |
+| `DATABASE_DIR` | Onde os dados são salvos (não precisa mudar). | `/app/data` |
 
-### Configuração dos Secrets no GitHub
+---
 
-Você precisa adicionar os seguintes **secrets** nas configurações do seu repositório GitHub (`Settings > Secrets and variables > Actions`):
+## 📡 Como enviar notificações
 
-| Secret | Descrição |
-|--------|-----------|
-| `DOCKERHUB_USERNAME` | Seu nome de usuário no Docker Hub |
-| `DOCKERHUB_TOKEN` | Token de acesso do Docker Hub (crie em Account Settings > Security) |
+O aplicativo funciona recebendo requisições **POST**. Você pode testar usando o `curl` no seu terminal ou integrando com seus scripts.
 
-### Como Criar o Token no Docker Hub
+### Exemplo com cURL:
 
-1. Acesse https://hub.docker.com
-2. Vá em **Account Settings > Security**
-3. Clique em **New Access Token**
-4. Dê um nome e copie o token gerado
-5. Adicione como `DOCKERHUB_TOKEN` nos secrets do GitHub
+```bash
+curl -X POST http://localhost:3000/api/webhook/notification \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sua_chave_secreta_aqui" \
+  -d '{
+    "message": "O backup foi concluído com sucesso!",
+    "title": "Backup Diário"
+  }'
+```
 
-### Acionamento do Deploy
+### Exemplo com Python:
 
-O workflow é acionado automaticamente em:
-- Pushes na branch `main`
-- Criação de novas tags (ex: `v1.0.0`)
+```python
+import requests
 
-Sua imagem estará disponível em: `hub.docker.com/seu-usuario/nome-do-repo`
+url = "http://localhost:3000/api/webhook/notification"
+headers = {
+    "Authorization": "Bearer sua_chave_secreta_aqui",
+    "Content-Type": "application/json"
+}
+data = {
+    "message": "CPU com temperatura alta!",
+    "title": "Alerta do Servidor"
+}
 
-## ↔️ Proxy de API Next.js (Rewrites)
+requests.post(url, headers=headers, json=data)
+```
 
-O arquivo `next.config.ts` está configurado para permitir o proxy de requisições para APIs externas.
+---
 
-- **Configuração Condicional**: Uma regra de proxy só é criada se a variável de ambiente correspondente estiver definida e não vazia.
-  
-- **Exemplo**: Se `EXTERNAL_API_URL_SERVICE1=https://api.exemplo.com`, uma requisição para `/api/service1/data` será proxyada para `https://api.exemplo.com/data`.
+## 🛟 Suporte
 
-## 🚀 Implantação no Dyad
-
-Este template foi projetado para fácil implantação no Dyad. Consulte a documentação oficial do Dyad sobre como usar o CLI para implantar sua aplicação.
-
-## 🛠️ Personalização
-
-- **Schema do Banco de Dados**: Modifique `src/lib/database.ts` e a interface `DbSchema`.
-- **Rotas de API**: Crie novas rotas em `src/app/api/`.
-- **Frontend**: Construa seus componentes em `src/components/`.
-- **Docker**: Ajuste o `Dockerfile` e `docker-compose.yml` conforme necessário.
-
-## ❓ Perguntas ou Problemas
-
-Se você tiver dúvidas ou encontrar problemas, consulte a documentação oficial do Next.js, Docker, lowdb e Dyad.
+Se tiver alguma dúvida ou problema, abra uma issue no repositório.
