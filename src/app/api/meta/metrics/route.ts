@@ -24,30 +24,41 @@ function getDateRangeForMeta(period: string) {
   return `{"since":"${formatDate(since)}","until":"${formatDate(now)}"}`;
 }
 
-// Lista exata de action_types que representam mensagens na API da Meta
+// Lista abrangente de action_types que representam mensagens na API da Meta
 const MESSAGE_ACTION_TYPES = [
   'total_messaging_connection',
   'onsite_conversion.messaging_conversation_started_7d',
-  'onsite_conversion.total_messaging_connection'
+  'onsite_conversion.total_messaging_connection',
+  'messaging_conversation_started_24h',
+  'messaging_conversation_started_7d',
+  'messaging_first_reply', // Às vezes conta como métrica de engajamento
+  'message_send'
 ];
 
 // Função robusta para extrair mensagens da API da Meta
 function extractMessages(data: any): number {
   let count = 0;
+  let foundExplicitMessageAction = false;
   
-  // 1. Tenta encontrar nas ações explícitas
+  // 1. Tenta encontrar e somar nas ações explícitas
   if (data.actions && Array.isArray(data.actions)) {
     data.actions.forEach((a: any) => {
       const type = a.action_type || '';
+      // Verifica se é um tipo de mensagem e soma
       if (MESSAGE_ACTION_TYPES.includes(type)) {
         count += parseInt(a.value || '0');
+        foundExplicitMessageAction = true;
       }
     });
   }
   
-  // 2. Fallback: Se não achou ações de mensagem, usa 'results'
-  // (Assume-se que a campanha é otimizada para mensagens se o total de ações de mensagem for 0)
-  if (count === 0 && data.results) {
+  // 2. Fallback inteligente:
+  // Se não encontrou nenhuma ação específica de mensagem no array,
+  // assumimos que o campo 'results' (que é a otimização da campanha) é o número correto,
+  // APENAS SE a campanha for do tipo mensagem (geralmente inferido se results > 0 e actions for vazio ou genérico).
+  if (!foundExplicitMessageAction && data.results) {
+     // Usamos results como fallback, mas com cautela.
+     // Na dúvida, se não há actions de mensagem, results é o melhor indicador de conversão.
      count = parseInt(data.results || '0');
   }
 
