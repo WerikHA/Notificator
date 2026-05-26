@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import SparklineChart from '@/components/ui/SparklineChart';
 import FunnelChart from '@/components/FunnelChart';
-import { Settings, Download, Calendar, Database, Cloud, Code } from 'lucide-react';
+import { Settings, Download, Calendar, Database, Cloud, Code, AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -142,9 +142,21 @@ export default function Dashboard() {
       </header>
 
       <main className="flex-1 p-4 max-w-[1600px] mx-auto w-full space-y-4 overflow-y-auto">
+        {/* Feedback de Erro ou Configuração */}
         {data?.status === 'config-required' && (
           <div className="bg-blue-900/30 border border-blue-800 p-4 rounded text-sm text-blue-200">
-            <strong>Configuração necessária:</strong> Adicione as variáveis `META_ADS_ACCESS_TOKEN` e `META_ADS_ACCOUNT_ID` no seu Docker para ativar a integração automática.
+            <strong>Configuração necessária:</strong> Adicione as variáveis `META_ADS_ACCESS_TOKEN` e `META_ADS_ACCOUNT_ID` no seu ambiente para ativar a integração automática.
+          </div>
+        )}
+        
+        {data?.error && data?.status !== 'config-required' && (
+          <div className="bg-red-900/30 border border-red-800 p-4 rounded text-sm text-red-200 flex items-start gap-2">
+            <AlertCircle size={18} className="mt-0.5 shrink-0" />
+            <div>
+              <strong>Erro na Integração Meta Ads:</strong>
+              <p className="mt-1 opacity-90">{data.error}</p>
+              <p className="mt-1 text-xs opacity-70">Verifique se o Token de Acesso é válido e não expirou.</p>
+            </div>
           </div>
         )}
 
