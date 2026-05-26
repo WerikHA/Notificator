@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
       const metaResult = await fetchMetaAdsData(period);
       if (metaResult.status === 'live-meta') {
         // Salva os dados frescos no banco
-        db.data.metrics = {
+        db.data!.metrics = {
           campaigns: metaResult.campaigns || [],
           daily: metaResult.daily || [],
           totals: metaResult.totals || {}
@@ -217,7 +217,7 @@ export async function GET(request: NextRequest) {
     // 3. Modo Automático (Auto): Tenta API -> Se falhar usa DB -> Se não tem DB usa Vazio
     const metaResult = await fetchMetaAdsData(period);
     if (metaResult.status === 'live-meta') {
-      db.data.metrics = {
+      db.data!.metrics = {
         campaigns: metaResult.campaigns || [],
         daily: metaResult.daily || [],
         totals: metaResult.totals || {}
@@ -231,7 +231,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ...db.data.metrics, source: 'manual' });
     }
 
-    // Retorno Vazio (Sem Mock)
+    // Retorno Vazio
     return NextResponse.json({
       campaigns: [],
       daily: [],
@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const db = await getDb();
 
-    db.data.metrics = {
+    db.data!.metrics = {
       campaigns: body.campaigns || [],
       daily: body.daily || [],
       totals: body.totals || {}
