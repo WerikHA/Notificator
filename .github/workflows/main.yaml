@@ -9,6 +9,8 @@ on:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+  # Força o GitHub Actions a usar Node.js 24 para evitar avisos de depreciação
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-push-image:
