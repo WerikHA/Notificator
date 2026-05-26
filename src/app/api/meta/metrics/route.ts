@@ -24,15 +24,22 @@ function getDateRangeForMeta(period: string) {
   return `{"since":"${formatDate(since)}","until":"${formatDate(now)}"}`;
 }
 
+// Lista exata de action_types que representam mensagens na API da Meta
+const MESSAGE_ACTION_TYPES = [
+  'total_messaging_connection',
+  'onsite_conversion.messaging_conversation_started_7d',
+  'onsite_conversion.total_messaging_connection'
+];
+
 // Função robusta para extrair mensagens da API da Meta
 function extractMessages(data: any): number {
   let count = 0;
   
-  // 1. Tenta encontrar nas ações explícitas (busca por variações comuns)
+  // 1. Tenta encontrar nas ações explícitas
   if (data.actions && Array.isArray(data.actions)) {
     data.actions.forEach((a: any) => {
-      const type = (a.action_type || '').toLowerCase();
-      if (type.includes('message') || type.includes('messaging') || type.includes('contact')) {
+      const type = a.action_type || '';
+      if (MESSAGE_ACTION_TYPES.includes(type)) {
         count += parseInt(a.value || '0');
       }
     });
