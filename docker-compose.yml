@@ -13,6 +13,9 @@ services:
       - NODE_ENV=production
       - DATABASE_DIR=/app/data
       - API_SECRET_KEY=sua_chave_aqui
+      # Novas variáveis para integração com Meta Ads
+      - META_ADS_ACCESS_TOKEN=sua_chave_aqui
+      - META_ADS_ACCOUNT_ID=sua_conta_aqui
     labels:
       - "com.casaos.description=Central de Notificações e Alertas"
       - "com.casaos.icon=https://cdn-icons-png.flaticon.com/512/3238/3238468.png"

@@ -1,21 +1,64 @@
 "use client";
 
-import { useState } from 'react';
-import { mockDailyMetrics, mockCampaigns } from '@/lib/mock-meta-data';
+import { useState, useEffect } from 'react';
 import MetricCard from '@/components/MetricCard';
 import PerformanceChart from '@/components/PerformanceChart';
 import CampaignTable from '@/components/CampaignTable';
 import { Wallet, MousePointer, TrendingUp, Eye } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CampaignMetric, DailyMetric } from '@/lib/mock-meta-data';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const [period, setPeriod] = useState('30d');
+  const [campaigns, setCampaigns] = useState<CampaignMetric[]>([]);
+  const [dailyMetrics, setDailyMetrics] = useState<DailyMetric[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const totalSpend = mockCampaigns.reduce((acc, curr) => acc + curr.spend, 0);
-  const totalImpressions = mockCampaigns.reduce((acc, curr) => acc + curr.impressions, 0);
-  const totalClicks = mockCampaigns.reduce((acc, curr) => acc + curr.clicks, 0);
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/meta/metrics?period=${period}`);
+        if (!res.ok) throw new Error('Falha ao buscar dados');
+        
+        const data = await res.json();
+        setCampaigns(data.campaigns || []);
+        setDailyMetrics(data.daily || []);
+
+        if (data.status === 'mock') {
+          toast.warning('Usando dados de demonstração. Configure a API Key.');
+        } else {
+          toast.success('Métricas atualizadas com sucesso!');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar métricas:', error);
+        toast.error('Erro ao carregar métricas');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [period]);
+
+  // Cálculos baseados nos dados carregados
+  const totalSpend = campaigns.reduce((acc, curr) => acc + curr.spend, 0);
+  const totalImpressions = campaigns.reduce((acc, curr) => acc + curr.impressions, 0);
+  const totalClicks = campaigns.reduce((acc, curr) => acc + curr.clicks, 0);
   const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
-  const avgRoas = mockCampaigns.length > 0 ? mockCampaigns.reduce((acc, curr) => acc + curr.roas, 0) / mockCampaigns.length : 0;
+  const avgRoas = campaigns.length > 0 ? campaigns.reduce((acc, curr) => acc + curr.roas, 0) / campaigns.length : 0;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center space-y-2">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Carregando métricas...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -70,10 +113,10 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-4">
-          <PerformanceChart data={mockDailyMetrics} />
+          <PerformanceChart data={dailyMetrics} />
         </div>
 
-        <CampaignTable data={mockCampaigns} />
+        <CampaignTable data={campaigns} />
       </main>
     </div>
   );
