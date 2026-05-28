@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const db = await getDb();
     if (!db.data) {
-      db.data = { examples: [], notifications: [], clients: [] };
+      db.data = { examples: [], clients: [] };
     }
     if (!db.data.clients) {
       db.data.clients = [];
