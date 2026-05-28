@@ -121,6 +121,44 @@ async function fetchMetaAdsData(accountId: string, accessToken: string, period: 
       }));
     }
 
+    // Buscar breakdown por gênero
+    const genderRes = await fetch(
+      `${baseUrl}?access_token=${accessToken}&fields=spend,impressions,clicks,actions&time_range=${encodeURIComponent(timeRange)}&breakdowns=gender`
+    );
+    const genderJson = await genderRes.json();
+    
+    let genderBreakdown: any[] = [];
+    if (genderJson.data && genderJson.data.length > 0) {
+      genderBreakdown = genderJson.data.map((g: any) => ({
+        gender: g.gender || 'unknown',
+        label: g.gender === 'male' ? 'Masculino' : g.gender === 'female' ? 'Feminino' : 'Desconhecido',
+        spend: parseFloat(g.spend || '0'),
+        impressions: parseInt(g.impressions || '0'),
+        clicks: parseInt(g.clicks || '0'),
+        messages: extractMessages(g),
+      }));
+    }
+
+    // Buscar breakdown por idade
+    const ageRes = await fetch(
+      `${baseUrl}?access_token=${accessToken}&fields=spend,impressions,clicks,actions&time_range=${encodeURIComponent(timeRange)}&breakdowns=age`
+    );
+    const ageJson = await ageRes.json();
+    
+    let ageBreakdown: any[] = [];
+    if (ageJson.data && ageJson.data.length > 0) {
+      ageBreakdown = ageJson.data.map((a: any) => ({
+        ageRange: a.age || 'Desconhecido',
+        spend: parseFloat(a.spend || '0'),
+        impressions: parseInt(a.impressions || '0'),
+        clicks: parseInt(a.clicks || '0'),
+        messages: extractMessages(a),
+      })).sort((a: any, b: any) => {
+        const order = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
+        return order.indexOf(a.ageRange) - order.indexOf(b.ageRange);
+      });
+    }
+
     const dailyRes = await fetch(
       `${baseUrl}?access_token=${accessToken}&level=account&fields=spend,impressions,reach,clicks,actions,results&time_range=${encodeURIComponent(timeRange)}&time_increment=1`
     );
@@ -142,6 +180,8 @@ async function fetchMetaAdsData(accountId: string, accessToken: string, period: 
       totals: finalTotals,
       campaigns: finalCampaigns,
       daily: finalDaily,
+      genderBreakdown,
+      ageBreakdown,
       status: 'live-meta'
     };
 

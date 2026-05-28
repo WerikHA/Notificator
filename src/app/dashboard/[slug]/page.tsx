@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
 import SparklineChart from '@/components/ui/SparklineChart';
 import FunnelChart from '@/components/FunnelChart';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid, BarChart, Bar, Legend } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings, Download, Calendar, RefreshCw, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
+import { Settings, Download, Calendar, RefreshCw, AlertCircle, Loader2, ExternalLink, Users, User } from 'lucide-react';
 import { usePdfDownload } from '@/hooks/use-pdf-download';
 import { toast } from 'sonner';
 
@@ -128,6 +128,8 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
   const campaigns = data?.campaigns || [];
   const daily = data?.daily || [];
   const totals = data?.totals || {};
+  const genderBreakdown = data?.genderBreakdown || [];
+  const ageBreakdown = data?.ageBreakdown || [];
   const clientName = data?.clientName || 'Cliente';
 
   const sparklineDataSpend = daily.map((d: any) => d.spend || 0);
@@ -142,12 +144,22 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
     Mensagens: d.messages,
   }));
 
-  const pieData = campaigns.map((c: any) => ({
-    name: c.adName ? (c.adName.length > 15 ? c.adName.substring(0, 15) + '...' : c.adName) : 'Desconhecido',
-    value: c.messages || 0,
+  // Dados para gráfico de pizza por gênero
+  const genderPieData = genderBreakdown.map((g: any) => ({
+    name: g.label,
+    value: g.messages || 0,
+    spend: g.spend || 0,
   }));
 
-  const COLORS = ['#3B82F6', '#60A5FA', '#93C5FD', '#DBEAFE'];
+  // Dados para gráfico de barras de idade
+  const ageChartData = ageBreakdown.map((a: any) => ({
+    name: a.ageRange,
+    Investimento: a.spend,
+    Mensagens: a.messages,
+    Cliques: a.clicks,
+  }));
+
+  const GENDER_COLORS = ['#3B82F6', '#EC4899', '#6B7280']; // Azul, Rosa, Cinza
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0A0B0D] text-white font-sans">
@@ -289,39 +301,120 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
 
           <div className="lg:col-span-3">
             <Card className="h-full bg-[#18191A] border-gray-800 text-white">
-              <CardContent className="flex flex-col items-center justify-center h-full">
-                <div className="w-full h-48 relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value">
-                        {pieData.map((entry: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#fff'}} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-16 h-16 bg-[#18191A] rounded-full flex items-center justify-center">
-                      <span className="text-xs text-gray-400">Total</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-full mt-4 space-y-1">
-                  {pieData.map((entry: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{backgroundColor: COLORS[index % COLORS.length]}}></div>
-                        <span className="text-gray-400 truncate w-24">{entry.name}</span>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                  <Users size={16} className="text-purple-400" />
+                  Distribuição por Gênero
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center">
+                {genderPieData.length > 0 ? (
+                  <>
+                    <div className="w-full h-48 relative">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={genderPieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value">
+                            {genderPieData.map((entry: any, index: number) => (
+                              <Cell key={`cell-${index}`} fill={GENDER_COLORS[index % GENDER_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#fff'}}
+                            formatter={(value: number, name: string) => [`${value} mensagens`, name]}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-16 h-16 bg-[#18191A] rounded-full flex items-center justify-center">
+                          <span className="text-xs text-gray-400">Total</span>
+                        </div>
                       </div>
-                      <span className="text-gray-300">{totals.messages ? ((entry.value / totals.messages) * 100).toFixed(1) : 0}%</span>
                     </div>
-                  ))}
-                </div>
+                    <div className="w-full mt-4 space-y-2">
+                      {genderPieData.map((entry: any, index: number) => {
+                        const totalMessages = genderPieData.reduce((sum: number, item: any) => sum + item.value, 0);
+                        const percentage = totalMessages > 0 ? ((entry.value / totalMessages) * 100).toFixed(1) : '0';
+                        return (
+                          <div key={index} className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full" style={{backgroundColor: GENDER_COLORS[index % GENDER_COLORS.length]}}></div>
+                              <User size={12} className={index === 0 ? 'text-blue-400' : index === 1 ? 'text-pink-400' : 'text-gray-400'} />
+                              <span className="text-gray-400">{entry.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-300">{entry.value} msgs</span>
+                              <span className="text-gray-500">({percentage}%)</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="w-full mt-3 pt-3 border-t border-gray-700">
+                      {genderPieData.map((entry: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between text-[11px] mb-1">
+                          <span className="text-gray-500">{entry.name} - Investimento</span>
+                          <span className="text-gray-400">{formatCurrency(entry.spend)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-gray-500 text-center py-8 text-sm">Dados de gênero não disponíveis</p>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Gráfico de Idade */}
+        {ageChartData.length > 0 && (
+          <Card className="bg-[#18191A] border-gray-800 text-white">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                <Users size={16} className="text-green-400" />
+                Distribuição por Idade
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[280px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={ageChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fill: '#9CA3AF', fontSize: 11 }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fill: '#9CA3AF', fontSize: 10 }} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#fff' }} />
+                    <Legend />
+                    <Bar dataKey="Investimento" fill="#10B981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Mensagens" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                {ageBreakdown.map((a: any, i: number) => (
+                  <div key={i} className="bg-[#242526] rounded p-2 text-xs">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-gray-400 font-medium">{a.ageRange}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Invest.</span>
+                        <span className="text-green-400">{formatCurrency(a.spend)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Msgs</span>
+                        <span className="text-blue-400">{a.messages}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Cliques</span>
+                        <span className="text-gray-300">{a.clicks}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Tabela de Campanhas com links para detalhes */}
         <Card className="bg-[#18191A] border-gray-800 text-white">
