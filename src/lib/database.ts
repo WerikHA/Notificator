@@ -13,6 +13,10 @@ interface Client {
   isActive: boolean;
 }
 
+interface Settings {
+  metaAccessToken: string;
+}
+
 interface DbSchema {
   examples: { id: number; name: string; createdAt: string }[];
   metrics?: {
@@ -21,6 +25,7 @@ interface DbSchema {
     totals: Record<string, any>;
   };
   clients: Client[];
+  settings: Settings;
 }
 
 const DB_FILE_NAME = 'db.json';
@@ -48,7 +53,8 @@ export async function getDb(): Promise<Low<DbSchema>> {
     dbInstance = new Low<DbSchema>(adapter, { 
       examples: [],
       metrics: { campaigns: [], daily: [], totals: {} },
-      clients: []
+      clients: [],
+      settings: { metaAccessToken: '' }
     });
 
     await dbInstance.read();
