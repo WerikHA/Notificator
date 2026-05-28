@@ -22,6 +22,9 @@ function getDateRange(period: string) {
   const now = new Date();
   let since = new Date();
   switch (period) {
+    case 'today':
+      since = new Date(now);
+      break;
     case '7d': since.setDate(now.getDate() - 7); break;
     case '15d': since.setDate(now.getDate() - 15); break;
     case '30d': since.setDate(now.getDate() - 30); break;

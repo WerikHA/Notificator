@@ -6,6 +6,9 @@ function getDateRange(period: string) {
   let since = new Date();
 
   switch (period) {
+    case 'today':
+      since = new Date(now);
+      break;
     case '7d':
       since.setDate(now.getDate() - 7);
       break;

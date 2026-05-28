@@ -223,6 +223,7 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="today">Hoje</SelectItem>
                 <SelectItem value="7d">Últimos 7 dias</SelectItem>
                 <SelectItem value="15d">Últimos 15 dias</SelectItem>
                 <SelectItem value="30d">Últimos 30 dias</SelectItem>
