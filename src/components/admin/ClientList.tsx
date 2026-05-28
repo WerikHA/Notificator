@@ -14,7 +14,8 @@ import {
   Power, 
   PowerOff,
   Loader2,
-  BarChart3
+  BarChart3,
+  Lock
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -33,6 +34,7 @@ interface Client {
   slug: string;
   metaAdsAccountId: string;
   metaAdsAccessToken: string;
+  chatPassword: string;
   createdAt: string;
   isActive: boolean;
 }
@@ -133,9 +135,17 @@ export default function ClientList({ clients, onEdit, onRefresh }: ClientListPro
                   <p className="text-xs text-gray-500 font-mono truncate">
                     Conta: {client.metaAdsAccountId}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Criado: {new Date(client.createdAt).toLocaleDateString('pt-BR')}
-                  </p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-xs text-gray-500">
+                      Criado: {new Date(client.createdAt).toLocaleDateString('pt-BR')}
+                    </p>
+                    {client.chatPassword && (
+                      <div className="flex items-center gap-1 text-xs text-purple-400">
+                        <Lock size={10} />
+                        <span>Senha chat: {client.chatPassword}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0">

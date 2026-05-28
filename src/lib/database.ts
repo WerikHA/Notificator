@@ -9,6 +9,7 @@ interface Client {
   slug: string;
   metaAdsAccountId: string;
   metaAdsAccessToken: string;
+  chatPassword: string;
   createdAt: string;
   isActive: boolean;
 }

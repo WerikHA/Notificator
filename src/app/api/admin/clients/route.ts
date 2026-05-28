@@ -26,10 +26,14 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, metaAdsAccountId, metaAdsAccessToken } = body;
+    const { name, metaAdsAccountId, metaAdsAccessToken, chatPassword } = body;
 
     if (!name || !metaAdsAccountId || !metaAdsAccessToken) {
       return NextResponse.json({ error: 'Todos os campos são obrigatórios' }, { status: 400 });
+    }
+
+    if (!chatPassword || chatPassword.length < 4) {
+      return NextResponse.json({ error: 'A senha do chat deve ter pelo menos 4 caracteres' }, { status: 400 });
     }
 
     const db = await getDb();
@@ -51,6 +55,7 @@ export async function POST(request: NextRequest) {
       slug: generateSlug(name),
       metaAdsAccountId,
       metaAdsAccessToken,
+      chatPassword,
       createdAt: new Date().toISOString(),
       isActive: true,
     };

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, Save, X, Search, AlertCircle, CheckCircle, Building2, Hash, DollarSign } from 'lucide-react';
+import { Loader2, Save, X, Search, AlertCircle, CheckCircle, Building2, Hash, DollarSign, Lock } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Client {
@@ -14,6 +14,7 @@ interface Client {
   name: string;
   metaAdsAccountId: string;
   metaAdsAccessToken: string;
+  chatPassword?: string;
 }
 
 interface ClientFormProps {
@@ -38,6 +39,7 @@ const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 
 export default function ClientForm({ client, globalToken, onSave, onCancel }: ClientFormProps) {
   const [name, setName] = useState(client?.name || '');
   const [accountId, setAccountId] = useState(client?.metaAdsAccountId || '');
+  const [chatPassword, setChatPassword] = useState(client?.chatPassword || '');
   const [saving, setSaving] = useState(false);
 
   const [fetchingAccounts, setFetchingAccounts] = useState(false);
@@ -108,6 +110,11 @@ export default function ClientForm({ client, globalToken, onSave, onCancel }: Cl
       return;
     }
 
+    if (!chatPassword || chatPassword.length < 4) {
+      toast.error('A senha do chat deve ter pelo menos 4 caracteres');
+      return;
+    }
+
     setSaving(true);
     try {
       const url = isEditing ? `/api/admin/clients/${client.id}` : '/api/admin/clients';
@@ -120,6 +127,7 @@ export default function ClientForm({ client, globalToken, onSave, onCancel }: Cl
           name,
           metaAdsAccountId: accountId,
           metaAdsAccessToken: globalToken,
+          chatPassword,
         }),
       });
 
@@ -275,11 +283,30 @@ export default function ClientForm({ client, globalToken, onSave, onCancel }: Cl
             </p>
           </div>
 
+          {/* Senha do Chat IA */}
+          <div className="space-y-2">
+            <Label htmlFor="chatPassword" className="text-gray-300 flex items-center gap-2">
+              <Lock size={16} className="text-gray-500" />
+              Senha do Chat IA
+            </Label>
+            <Input
+              id="chatPassword"
+              type="text"
+              value={chatPassword}
+              onChange={(e) => setChatPassword(e.target.value)}
+              placeholder="Mínimo 4 caracteres"
+              className="bg-[#242526] border-gray-700 text-white"
+            />
+            <p className="text-xs text-gray-500">
+              Senha individual que o cliente usará para acessar o chat de IA no dashboard
+            </p>
+          </div>
+
           {/* Botões */}
           <div className="flex gap-2 pt-2 border-t border-gray-800">
             <Button
               type="submit"
-              disabled={saving || !name || !accountId}
+              disabled={saving || !name || !accountId || !chatPassword}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {saving ? (

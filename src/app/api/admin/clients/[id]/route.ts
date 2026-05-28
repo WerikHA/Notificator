@@ -38,11 +38,17 @@ export async function PUT(
       return NextResponse.json({ error: 'Cliente não encontrado' }, { status: 404 });
     }
 
-    const { name, metaAdsAccountId, metaAdsAccessToken, isActive } = body;
+    const { name, metaAdsAccountId, metaAdsAccessToken, chatPassword, isActive } = body;
     
     if (name !== undefined) db.data.clients[index].name = name;
     if (metaAdsAccountId !== undefined) db.data.clients[index].metaAdsAccountId = metaAdsAccountId;
     if (metaAdsAccessToken !== undefined) db.data.clients[index].metaAdsAccessToken = metaAdsAccessToken;
+    if (chatPassword !== undefined) {
+      if (chatPassword.length > 0 && chatPassword.length < 4) {
+        return NextResponse.json({ error: 'A senha do chat deve ter pelo menos 4 caracteres' }, { status: 400 });
+      }
+      db.data.clients[index].chatPassword = chatPassword;
+    }
     if (isActive !== undefined) db.data.clients[index].isActive = isActive;
 
     await db.write();
