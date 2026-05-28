@@ -320,9 +320,10 @@
       "name": "OMNI CATANDUVA",
       "slug": "omni-cf8435",
       "metaAdsAccountId": "810729241939443",
-      "metaAdsAccessToken": "EAAXEaq1tVqwBRgw74P0EZAWmLSBRaNL0WyZAKHTLDfgHbj2gSvEPE6ZAsJZAGlYWcJ7PVx5Qq5dMFZB2fVK3oSqXvXwZAAZBmkXVguMrv9KfBTGzywugvwK3GZAIJBGDq6bKfVOXcMnebHLR0A5FwKgXTykKTKvpQX3kw39PILphgvPfTNd83dCk4ivSazXX7mbihQC7qtgMgADxRFh3OipBekuY82Msoml5CSqk",
+      "metaAdsAccessToken": "EAAXEaq1tVqwBRoofpODcMe0kbJ1OJf7tZAf6go7MradwW8QyWVRELo7LZAmkGE8Pq81G65ZC8BGLQPfRQfNdpg5H7S1QFkmoK6jywuBqIY1SomGBMTuw9f1TQt2whgiewvyASo04RddZAU1UV3574MdznEHpaSz6uWq5dx9tmNdbLccynFVYLxH4gpVQ",
       "createdAt": "2026-05-26T08:56:54.095Z",
-      "isActive": true
+      "isActive": true,
+      "chatPassword": "Paulo123"
     },
     {
       "id": "89d370cc-06fc-4633-9640-6a842c3c6ec0",
@@ -331,7 +332,8 @@
       "metaAdsAccountId": "582487400875078",
       "metaAdsAccessToken": "EAAXEaq1tVqwBRoofpODcMe0kbJ1OJf7tZAf6go7MradwW8QyWVRELo7LZAmkGE8Pq81G65ZC8BGLQPfRQfNdpg5H7S1QFkmoK6jywuBqIY1SomGBMTuw9f1TQt2whgiewvyASo04RddZAU1UV3574MdznEHpaSz6uWq5dx9tmNdbLccynFVYLxH4gpVQ",
       "createdAt": "2026-05-26T11:59:23.394Z",
-      "isActive": true
+      "isActive": true,
+      "chatPassword": "Paulo123"
     },
     {
       "id": "e97d8772-6707-4e0a-b46c-e94e54d09290",
@@ -349,7 +351,8 @@
       "metaAdsAccountId": "1518579669805656",
       "metaAdsAccessToken": "EAAXEaq1tVqwBRoofpODcMe0kbJ1OJf7tZAf6go7MradwW8QyWVRELo7LZAmkGE8Pq81G65ZC8BGLQPfRQfNdpg5H7S1QFkmoK6jywuBqIY1SomGBMTuw9f1TQt2whgiewvyASo04RddZAU1UV3574MdznEHpaSz6uWq5dx9tmNdbLccynFVYLxH4gpVQ",
       "createdAt": "2026-05-28T13:00:01.188Z",
-      "isActive": true
+      "isActive": true,
+      "chatPassword": "Paulo123"
     }
   ],
   "settings": {
