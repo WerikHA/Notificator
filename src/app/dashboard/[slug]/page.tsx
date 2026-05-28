@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Settings, Download, Calendar, RefreshCw, AlertCircle, Loader2, ExternalLink, Users, User } from 'lucide-react';
 import { usePdfDownload } from '@/hooks/use-pdf-download';
 import { toast } from 'sonner';
+import AiChatPanel from '@/components/AiChatPanel';
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 const formatNumber = (val: number) => new Intl.NumberFormat('pt-BR').format(val);
@@ -144,7 +145,6 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
     Mensagens: d.messages,
   }));
 
-  // Cores: Masculino = Azul, Feminino = Rosa, Desconhecido = Cinza
   const GENDER_COLOR_MAP: Record<string, string> = {
     male: '#3B82F6',
     female: '#EC4899',
@@ -152,12 +152,10 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
   };
   const GENDER_ORDER = ['male', 'female', 'unknown'];
 
-  // Ordenar e mapear dados de gênero
   const sortedGenderBreakdown = [...genderBreakdown].sort(
     (a: any, b: any) => GENDER_ORDER.indexOf(a.gender) - GENDER_ORDER.indexOf(b.gender)
   );
 
-  // Dados para gráfico de pizza por gênero - usando impressões (entrega)
   const genderPieData = sortedGenderBreakdown.map((g: any) => ({
     name: g.label,
     gender: g.gender,
@@ -166,7 +164,6 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
     spend: g.spend || 0,
   }));
 
-  // Dados para gráfico de barras de idade
   const ageChartData = ageBreakdown.map((a: any) => ({
     name: a.ageRange,
     Investimento: a.spend,
@@ -384,7 +381,6 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
           </div>
         </div>
 
-        {/* Gráfico de Idade */}
         {ageChartData.length > 0 && (
           <Card className="bg-[#18191A] border-gray-800 text-white">
             <CardHeader>
@@ -434,7 +430,6 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
           </Card>
         )}
 
-        {/* Tabela de Campanhas com links para detalhes */}
         <Card className="bg-[#18191A] border-gray-800 text-white">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -483,6 +478,9 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
           </CardContent>
         </Card>
       </main>
+
+      {/* AI Chat Panel */}
+      <AiChatPanel slug={slug} period={period} />
     </div>
   );
 }
