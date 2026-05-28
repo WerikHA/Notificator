@@ -341,6 +341,15 @@
       "metaAdsAccessToken": "EAAXEaq1tVqwBRoofpODcMe0kbJ1OJf7tZAf6go7MradwW8QyWVRELo7LZAmkGE8Pq81G65ZC8BGLQPfRQfNdpg5H7S1QFkmoK6jywuBqIY1SomGBMTuw9f1TQt2whgiewvyASo04RddZAU1UV3574MdznEHpaSz6uWq5dx9tmNdbLccynFVYLxH4gpVQ",
       "createdAt": "2026-05-26T12:00:56.584Z",
       "isActive": true
+    },
+    {
+      "id": "59c44e9b-b56a-4dcf-aa49-ba52f2b4ac6f",
+      "name": "Don roman barbearia",
+      "slug": "don-roman-barbearia-38358b",
+      "metaAdsAccountId": "1518579669805656",
+      "metaAdsAccessToken": "EAAXEaq1tVqwBRoofpODcMe0kbJ1OJf7tZAf6go7MradwW8QyWVRELo7LZAmkGE8Pq81G65ZC8BGLQPfRQfNdpg5H7S1QFkmoK6jywuBqIY1SomGBMTuw9f1TQt2whgiewvyASo04RddZAU1UV3574MdznEHpaSz6uWq5dx9tmNdbLccynFVYLxH4gpVQ",
+      "createdAt": "2026-05-28T13:00:01.188Z",
+      "isActive": true
     }
   ],
   "settings": {

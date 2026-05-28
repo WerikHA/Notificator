@@ -18,7 +18,8 @@ import {
   Wallet,
   TrendingUp,
   Target,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -47,6 +48,8 @@ interface BalanceInfo {
   amountSpent: number;
   balance: number;
   spendCap: number;
+  availableBalance: number | null;
+  hasLimit: boolean;
 }
 
 interface ClientListProps {
@@ -285,22 +288,52 @@ export default function ClientList({ clients, onEdit, onRefresh }: ClientListPro
                       </div>
                     )}
                     {bal && (
-                      <div className="flex flex-wrap gap-4 text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <Wallet size={12} className="text-green-400" />
-                          <span className="text-gray-500">Saldo:</span>
-                          <span className="font-medium text-green-400">{formatCurrency(bal.balance)}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <TrendingUp size={12} className="text-blue-400" />
-                          <span className="text-gray-500">Gasto:</span>
-                          <span className="font-medium text-blue-400">{formatCurrency(bal.amountSpent)}</span>
-                        </div>
-                        {bal.spendCap > 0 && (
+                      <div className="space-y-2">
+                        {/* Saldo Disponível */}
+                        {bal.availableBalance !== null && bal.availableBalance !== undefined ? (
                           <div className="flex items-center gap-1.5">
-                            <Target size={12} className="text-purple-400" />
-                            <span className="text-gray-500">Limite:</span>
-                            <span className="font-medium text-purple-400">{formatCurrency(bal.spendCap)}</span>
+                            <Wallet size={12} className="text-green-400" />
+                            <span className="text-gray-500">Saldo Disponível:</span>
+                            <span className={`font-medium ${bal.availableBalance > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                              {formatCurrency(bal.availableBalance)}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <AlertCircle size={12} className="text-yellow-400" />
+                            <span className="text-gray-500">Limite não configurado</span>
+                          </div>
+                        )}
+
+                        {/* Outras métricas */}
+                        <div className="flex flex-wrap gap-4 text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <TrendingUp size={12} className="text-blue-400" />
+                            <span className="text-gray-500">Gasto Total:</span>
+                            <span className="font-medium text-blue-400">{formatCurrency(bal.amountSpent)}</span>
+                          </div>
+                          {bal.spendCap > 0 && (
+                            <div className="flex items-center gap-1.5">
+                              <Target size={12} className="text-purple-400" />
+                              <span className="text-gray-500">Limite Mensal:</span>
+                              <span className="font-medium text-purple-400">{formatCurrency(bal.spendCap)}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Barra de progresso */}
+                        {bal.spendCap > 0 && (
+                          <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all ${
+                                bal.availableBalance !== null && bal.availableBalance > 0 
+                                  ? 'bg-green-500' 
+                                  : 'bg-red-500'
+                              }`}
+                              style={{ 
+                                width: `${Math.min(100, (bal.amountSpent / bal.spendCap) * 100)}%` 
+                              }}
+                            />
                           </div>
                         )}
                       </div>
