@@ -72,11 +72,12 @@ async function fetchCampaignDetails(campaignId: string, accessToken: string, per
       messageRate: clicks > 0 ? (msgs / clicks) * 100 : 0,
     };
 
-    // 2. Breakdown por Gênero
+    // 2. Breakdown por Gênero - usa 'actions' em vez de 'messages'
     const genderRes = await fetch(
-      `${baseUrl}/insights?access_token=${accessToken}&fields=spend,impressions,clicks,messages&time_range=${encodeURIComponent(timeRange)}&breakdowns=gender`
+      `${baseUrl}/insights?access_token=${accessToken}&fields=spend,impressions,clicks,actions&time_range=${encodeURIComponent(timeRange)}&breakdowns=gender`
     );
     const genderJson = await genderRes.json();
+    console.log('Gender breakdown response:', JSON.stringify(genderJson).substring(0, 500));
 
     const genderBreakdown = (genderJson.data || []).map((g: any) => ({
       gender: g.gender || 'unknown',
@@ -87,11 +88,12 @@ async function fetchCampaignDetails(campaignId: string, accessToken: string, per
       messages: extractMessages(g),
     }));
 
-    // 3. Breakdown por Idade
+    // 3. Breakdown por Idade - usa 'actions' em vez de 'messages'
     const ageRes = await fetch(
-      `${baseUrl}/insights?access_token=${accessToken}&fields=spend,impressions,clicks,messages&time_range=${encodeURIComponent(timeRange)}&breakdowns=age`
+      `${baseUrl}/insights?access_token=${accessToken}&fields=spend,impressions,clicks,actions&time_range=${encodeURIComponent(timeRange)}&breakdowns=age`
     );
     const ageJson = await ageRes.json();
+    console.log('Age breakdown response:', JSON.stringify(ageJson).substring(0, 500));
 
     const ageBreakdown = (ageJson.data || []).map((a: any) => ({
       ageRange: a.age || 'Desconhecido',
