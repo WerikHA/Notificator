@@ -20,10 +20,9 @@ services:
       # Configurações para integração com Meta Ads (Dashboard)
       - META_ADS_ACCESS_TOKEN=sua_chave_aqui
       - META_ADS_ACCOUNT_ID=sua_conta_aqui
-      # Configurações para IA (Chat)
-      - AI_API_URL=https://opencode.ai/zen/go/v1/chat/completions
-      - AI_API_KEY=sua_api_key_aqui
-      - AI_MODEL=mimo-v2.5
+      # Configurações para IA via OpenRouter
+      - AI_API_KEY=sua_openrouter_api_key_aqui
+      - AI_MODEL=minimax/minimax-m2.5:free
     labels:
       - "com.casaos.description=AM Dashboard Traffic - Dashboard Meta Ads"
       - "com.casaos.icon=https://cdn-icons-png.flaticon.com/512/3238/3238468.png"

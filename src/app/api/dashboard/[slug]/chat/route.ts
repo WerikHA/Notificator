@@ -255,22 +255,25 @@ export async function POST(
       { role: 'user', content: message },
     ];
 
-    const aiUrl = process.env.AI_API_URL;
+    // Configuração do OpenRouter
     const aiKey = process.env.AI_API_KEY;
-    const aiModel = process.env.AI_MODEL || 'mimo-v2.5';
+    const aiModel = process.env.AI_MODEL || 'minimax/minimax-m2.5:free';
+    const openrouterUrl = 'https://openrouter.ai/api/v1/chat/completions';
 
-    if (!aiUrl || !aiKey) {
+    if (!aiKey) {
       return NextResponse.json(
-        { error: 'API de IA não configurada. Adicione as variáveis AI_API_URL e AI_API_KEY.' },
+        { error: 'Chave de API do OpenRouter não configurada. Adicione a variável AI_API_KEY.' },
         { status: 500 }
       );
     }
 
-    const aiRes = await fetch(aiUrl, {
+    const aiRes = await fetch(openrouterUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${aiKey}`,
+        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        'X-Title': 'AM Dashboard Traffic',
       },
       body: JSON.stringify({
         model: aiModel,
@@ -282,9 +285,9 @@ export async function POST(
 
     if (!aiRes.ok) {
       const errorText = await aiRes.text();
-      console.error('Erro na API de IA:', aiRes.status, errorText);
+      console.error('Erro na API do OpenRouter:', aiRes.status, errorText);
       return NextResponse.json(
-        { error: `Erro na API de IA (${aiRes.status})` },
+        { error: `Erro na API do OpenRouter (${aiRes.status})` },
         { status: 502 }
       );
     }
