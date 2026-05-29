@@ -202,17 +202,15 @@ export async function POST(
     ];
 
     const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
-    const aiModel = process.env.AI_MODEL || 'minimax/minimax-m2.5:free';
+    const aiModel = process.env.AI_MODEL || 'meta-llama/llama-3.1-8b-instruct:free';
 
     console.log('=== CHAT AI DEBUG ===');
-    console.log('OPENROUTER_API_KEY existe:', !!process.env.OPENROUTER_API_KEY);
-    console.log('AI_API_KEY existe:', !!process.env.AI_API_KEY);
-    console.log('Chave usada:', aiKey ? `${aiKey.substring(0, 10)}...` : 'NENHUMA');
+    console.log('Chave existe:', !!aiKey);
     console.log('Modelo:', aiModel);
 
     if (!aiKey) {
       return NextResponse.json(
-        { error: 'Chave de API não configurada. Configure OPENROUTER_API_KEY ou AI_API_KEY.' },
+        { error: 'Chave de API não configurada. Adicione OPENROUTER_API_KEY nas variáveis de ambiente do Dyad.' },
         { status: 500 }
       );
     }
