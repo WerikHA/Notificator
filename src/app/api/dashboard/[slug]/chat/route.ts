@@ -202,7 +202,8 @@ export async function POST(
     ];
 
     const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
-    const aiModel = process.env.AI_MODEL || 'meta-llama/llama-3.1-8b-instruct:free';
+    // Modelo gratuito que existe no OpenRouter
+    const aiModel = 'meta-llama/llama-4-maverick:free';
 
     console.log('=== CHAT AI DEBUG ===');
     console.log('Chave existe:', !!aiKey);
@@ -220,7 +221,7 @@ export async function POST(
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${aiKey}`,
-        'HTTP-Referer': 'http://localhost:3000',
+        'HTTP-Referer': 'http://localhost:32107',
         'X-Title': 'AM Dashboard Traffic',
       },
       body: JSON.stringify({

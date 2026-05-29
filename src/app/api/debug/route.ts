@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
-  const aiModel = process.env.AI_MODEL || 'meta-llama/llama-3.1-8b-instruct:free';
+  const aiModel = 'meta-llama/llama-4-maverick:free';
 
   const diagnostics: Record<string, any> = {
     timestamp: new Date().toISOString(),

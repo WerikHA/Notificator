@@ -12,17 +12,13 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_DIR=/app/data
-      # Chave de API (opcional, para compatibilidade)
       - API_SECRET_KEY=
-      # Credenciais do Admin
       - ADMIN_USERNAME=WerikS
       - ADMIN_PASSWORD=We12wi25k#3912*
-      # Configurações para integração com Meta Ads (Dashboard)
       - META_ADS_ACCESS_TOKEN=sua_chave_aqui
       - META_ADS_ACCOUNT_ID=sua_conta_aqui
-      # Configurações para IA via OpenRouter
       - AI_API_KEY=sua_openrouter_api_key_aqui
-      - AI_MODEL=meta-llama/llama-3.1-8b-instruct:free
+      - AI_MODEL=meta-llama/llama-4-maverick:free
     labels:
       - "com.casaos.description=AM Dashboard Traffic - Dashboard Meta Ads"
       - "com.casaos.icon=https://cdn-icons-png.flaticon.com/512/3238/3238468.png"
