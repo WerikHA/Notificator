@@ -18,7 +18,7 @@ services:
       - META_ADS_ACCESS_TOKEN=sua_chave_aqui
       - META_ADS_ACCOUNT_ID=sua_conta_aqui
       - AI_API_KEY=sua_openrouter_api_key_aqui
-      - AI_MODEL=meta-llama/llama-4-maverick:free
+      - AI_MODEL=google/gemma-2-9b-it:free
     labels:
       - "com.casaos.description=AM Dashboard Traffic - Dashboard Meta Ads"
       - "com.casaos.icon=https://cdn-icons-png.flaticon.com/512/3238/3238468.png"

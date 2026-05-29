@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
-  const aiModel = 'meta-llama/llama-4-maverick:free';
+  const aiModel = process.env.AI_MODEL || 'deepseek/deepseek-r1-0528:free';
 
   const diagnostics: Record<string, any> = {
     timestamp: new Date().toISOString(),
@@ -10,7 +10,6 @@ export async function GET() {
       OPENROUTER_API_KEY: {
         exists: !!process.env.OPENROUTER_API_KEY,
         length: process.env.OPENROUTER_API_KEY?.length || 0,
-        prefix: process.env.OPENROUTER_API_KEY?.substring(0, 15) + '...' || 'N/A',
       },
       AI_API_KEY: {
         exists: !!process.env.AI_API_KEY,
@@ -18,25 +17,20 @@ export async function GET() {
       },
       AI_MODEL: {
         value: aiModel,
+        fromEnv: !!process.env.AI_MODEL,
       },
-      keyUsed: aiKey ? 'OPENROUTER_API_KEY ou AI_API_KEY' : 'NENHUMA',
     },
   };
 
   if (!aiKey) {
     return NextResponse.json({
       status: 'ERROR',
-      message: 'Nenhuma chave de API configurada',
+      message: 'Nenhuma chave de API configurada. Defina OPENROUTER_API_KEY ou AI_API_KEY.',
       diagnostics,
     }, { status: 400 });
   }
 
   try {
-    console.log('=== DEBUG AI ===');
-    console.log('Chave existe:', !!aiKey);
-    console.log('Tamanho da chave:', aiKey.length);
-    console.log('Modelo:', aiModel);
-
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -58,14 +52,13 @@ export async function GET() {
     
     diagnostics.apiResponse = {
       status: response.status,
-      statusText: response.statusText,
       bodyPreview: responseText.substring(0, 500),
     };
 
     if (!response.ok) {
       return NextResponse.json({
         status: 'API_ERROR',
-        message: `OpenRouter retornou erro ${response.status}`,
+        message: `OpenRouter retornou erro ${response.status}. Modelo: "${aiModel}"`,
         diagnostics,
       }, { status: 502 });
     }
@@ -73,29 +66,17 @@ export async function GET() {
     const data = JSON.parse(responseText);
     const reply = data.choices?.[0]?.message?.content;
 
-    diagnostics.success = {
-      model: data.model,
-      reply: reply,
-      usage: data.usage,
-    };
-
     return NextResponse.json({
       status: 'OK',
-      message: 'IA funcionando corretamente!',
+      message: 'IA funcionando!',
       reply,
       diagnostics,
     });
   } catch (error: any) {
-    diagnostics.error = {
-      name: error.name,
-      message: error.message,
-      stack: error.stack?.substring(0, 300),
-    };
-
     return NextResponse.json({
       status: 'FETCH_ERROR',
       message: 'Falha ao conectar com OpenRouter',
-      diagnostics,
+      diagnostics: { ...diagnostics, error: error.message },
     }, { status: 500 });
   }
 }

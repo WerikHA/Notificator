@@ -202,16 +202,11 @@ export async function POST(
     ];
 
     const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
-    // Modelo gratuito CONFIRMADO que existe no OpenRouter
-    const aiModel = 'meta-llama/llama-3.1-8b-instruct:free';
-
-    console.log('=== CHAT AI DEBUG ===');
-    console.log('Chave existe:', !!aiKey);
-    console.log('Modelo:', aiModel);
+    const aiModel = process.env.AI_MODEL || 'deepseek/deepseek-r1-0528:free';
 
     if (!aiKey) {
       return NextResponse.json(
-        { error: 'Chave de API não configurada. Adicione OPENROUTER_API_KEY nas variáveis de ambiente do Dyad.' },
+        { error: 'Chave de API não configurada. Adicione OPENROUTER_API_KEY ou AI_API_KEY nas variáveis de ambiente.' },
         { status: 500 }
       );
     }
@@ -231,7 +226,6 @@ export async function POST(
     });
 
     const responseText = await aiRes.text();
-    console.log('Resposta status:', aiRes.status);
 
     if (!aiRes.ok) {
       console.error('Erro OpenRouter:', aiRes.status, responseText);
@@ -243,8 +237,15 @@ export async function POST(
         );
       }
 
+      if (aiRes.status === 404) {
+        return NextResponse.json(
+          { error: `Modelo "${aiModel}" não encontrado no OpenRouter. Verifique o nome do modelo na variável AI_MODEL.` },
+          { status: 502 }
+        );
+      }
+
       return NextResponse.json(
-        { error: `Erro da API (${aiRes.status}). Verifique a chave OPENROUTER_API_KEY.` },
+        { error: `Erro da API (${aiRes.status}). Verifique a chave de API.` },
         { status: 502 }
       );
     }
