@@ -202,8 +202,8 @@ export async function POST(
     ];
 
     const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
-    // Modelo gratuito que existe no OpenRouter
-    const aiModel = 'meta-llama/llama-4-maverick:free';
+    // Modelo gratuito CONFIRMADO que existe no OpenRouter
+    const aiModel = 'meta-llama/llama-3.1-8b-instruct:free';
 
     console.log('=== CHAT AI DEBUG ===');
     console.log('Chave existe:', !!aiKey);
