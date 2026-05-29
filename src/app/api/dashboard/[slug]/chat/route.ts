@@ -260,12 +260,28 @@ export async function POST(
     const aiModel = process.env.AI_MODEL || 'minimax/minimax-m2.5:free';
     const openrouterUrl = 'https://openrouter.ai/api/v1/chat/completions';
 
+    console.log('=== DEBUG OPENROUTER ===');
+    console.log('AI_KEY configured:', !!aiKey);
+    console.log('AI_KEY length:', aiKey?.length || 0);
+    console.log('Model:', aiModel);
+    console.log('Messages count:', messages.length);
+
     if (!aiKey) {
+      console.error('AI_API_KEY não configurada');
       return NextResponse.json(
         { error: 'Chave de API do OpenRouter não configurada. Adicione a variável AI_API_KEY.' },
         { status: 500 }
       );
     }
+
+    const requestBody = {
+      model: aiModel,
+      messages,
+      temperature: 0.7,
+      max_tokens: 2000,
+    };
+
+    console.log('Request body:', JSON.stringify({ ...requestBody, messages: `[${messages.length} messages]` }));
 
     const aiRes = await fetch(openrouterUrl, {
       method: 'POST',
@@ -275,30 +291,50 @@ export async function POST(
         'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
         'X-Title': 'AM Dashboard Traffic',
       },
-      body: JSON.stringify({
-        model: aiModel,
-        messages,
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
+    console.log('Response status:', aiRes.status);
+    console.log('Response headers:', Object.fromEntries(aiRes.headers.entries()));
+
+    const responseText = await aiRes.text();
+    console.log('Response body (first 500 chars):', responseText.substring(0, 500));
+
     if (!aiRes.ok) {
-      const errorText = await aiRes.text();
-      console.error('Erro na API do OpenRouter:', aiRes.status, errorText);
+      console.error('Erro na API do OpenRouter:', aiRes.status, responseText);
       return NextResponse.json(
-        { error: `Erro na API do OpenRouter (${aiRes.status})` },
+        { 
+          error: `Erro na API do OpenRouter (${aiRes.status})`,
+          details: responseText.substring(0, 200)
+        },
         { status: 502 }
       );
     }
 
-    const aiJson = await aiRes.json();
+    let aiJson;
+    try {
+      aiJson = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Erro ao parsear resposta JSON:', parseError);
+      console.error('Resposta completa:', responseText);
+      return NextResponse.json(
+        { error: 'Resposta inválida da API' },
+        { status: 500 }
+      );
+    }
+
+    console.log('AI Response structure:', JSON.stringify(Object.keys(aiJson)));
+    console.log('Choices:', aiJson.choices?.length || 0);
 
     const reply = aiJson.choices?.[0]?.message?.content;
 
     if (!reply) {
+      console.error('Resposta da IA vazia:', aiJson);
       return NextResponse.json({ error: 'A IA não retornou uma resposta válida' }, { status: 500 });
     }
+
+    console.log('Reply length:', reply.length);
+    console.log('=== END DEBUG ===');
 
     return NextResponse.json({ reply });
   } catch (error) {
