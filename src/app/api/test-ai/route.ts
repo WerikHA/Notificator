@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const aiKey = process.env.AI_API_KEY;
+  const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
   const aiModel = process.env.AI_MODEL || 'minimax/minimax-m2.5:free';
+
+  console.log('=== TESTE AI ===');
+  console.log('OPENROUTER_API_KEY existe:', !!process.env.OPENROUTER_API_KEY);
+  console.log('AI_API_KEY existe:', !!process.env.AI_API_KEY);
+  console.log('Chave usada:', aiKey ? `${aiKey.substring(0, 10)}...${aiKey.substring(aiKey.length - 5)}` : 'NENHUMA');
+  console.log('Modelo:', aiModel);
 
   if (!aiKey) {
     return NextResponse.json({ 
-      error: 'AI_API_KEY não configurada',
-      configured: false 
+      error: 'Nenhuma chave de API configurada',
+      configured: false,
+      envVars: {
+        OPENROUTER_API_KEY: !!process.env.OPENROUTER_API_KEY,
+        AI_API_KEY: !!process.env.AI_API_KEY,
+      }
     }, { status: 400 });
   }
 
@@ -18,7 +28,7 @@ export async function GET() {
         'Authorization': `Bearer ${aiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'AM Dashboard Traffic Test',
+        'X-Title': 'AM Dashboard Traffic',
       },
       body: JSON.stringify({
         model: aiModel,
@@ -29,13 +39,15 @@ export async function GET() {
     });
 
     const responseText = await response.text();
+    console.log('Status da resposta:', response.status);
+    console.log('Corpo da resposta:', responseText.substring(0, 300));
 
     if (!response.ok) {
       return NextResponse.json({ 
         error: `Erro ${response.status}`,
         details: responseText.substring(0, 500),
         keyLength: aiKey.length,
-        keyPrefix: aiKey.substring(0, 10) + '...'
+        keyPrefix: aiKey.substring(0, 15) + '...'
       }, { status: 502 });
     }
 

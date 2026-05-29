@@ -110,7 +110,6 @@ Cliente: "${clientName}"
 
 `;
 
-  // Dados resumidos de 30 dias
   if (data30d) {
     const t = data30d.totals;
     ctx += `📊 ÚLTIMOS 30 DIAS:
@@ -128,7 +127,6 @@ Cliente: "${clientName}"
     }
   }
 
-  // Dados resumidos de 15 dias
   if (data15d) {
     const t = data15d.totals;
     ctx += `📊 ÚLTIMOS 15 DIAS:
@@ -138,7 +136,6 @@ Cliente: "${clientName}"
 `;
   }
 
-  // Dados resumidos de 7 dias
   if (data7d) {
     const t = data7d.totals;
     ctx += `📊 ÚLTIMOS 7 DIAS:
@@ -185,7 +182,6 @@ export async function POST(
       return NextResponse.json({ error: 'Cliente não encontrado' }, { status: 404 });
     }
 
-    // Busca dados de todos os períodos
     const [data30d, data15d, data7d] = await Promise.all([
       fetchClientDataForPeriod(client.metaAdsAccountId, client.metaAdsAccessToken, '30d'),
       fetchClientDataForPeriod(client.metaAdsAccountId, client.metaAdsAccessToken, '15d'),
@@ -194,7 +190,6 @@ export async function POST(
 
     const systemPrompt = buildContext(client.name, data30d, data15d, data7d);
 
-    // Apenas últimas 6 mensagens do histórico
     const recentHistory = history.slice(-6).map((h) => ({
       role: h.role as 'user' | 'assistant',
       content: h.content,
@@ -206,22 +201,27 @@ export async function POST(
       { role: 'user' as const, content: message },
     ];
 
-    const aiKey = process.env.AI_API_KEY;
+    const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
     const aiModel = process.env.AI_MODEL || 'minimax/minimax-m2.5:free';
+
+    console.log('=== CHAT AI DEBUG ===');
+    console.log('OPENROUTER_API_KEY existe:', !!process.env.OPENROUTER_API_KEY);
+    console.log('AI_API_KEY existe:', !!process.env.AI_API_KEY);
+    console.log('Chave usada:', aiKey ? `${aiKey.substring(0, 10)}...` : 'NENHUMA');
+    console.log('Modelo:', aiModel);
 
     if (!aiKey) {
       return NextResponse.json(
-        { error: 'Chave de API não configurada. Adicione AI_API_KEY.' },
+        { error: 'Chave de API não configurada. Configure OPENROUTER_API_KEY ou AI_API_KEY.' },
         { status: 500 }
       );
     }
 
-    // Chama OpenRouter
     const aiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${aiKey}`,
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${aiKey}`,
         'HTTP-Referer': 'http://localhost:3000',
         'X-Title': 'AM Dashboard Traffic',
       },
@@ -232,20 +232,20 @@ export async function POST(
     });
 
     const responseText = await aiRes.text();
+    console.log('Resposta status:', aiRes.status);
 
     if (!aiRes.ok) {
-      console.error('OpenRouter error:', aiRes.status, responseText);
+      console.error('Erro OpenRouter:', aiRes.status, responseText);
       
-      // Trata erro de rate limit
       if (aiRes.status === 429) {
         return NextResponse.json(
-          { error: 'Limite de requisições atingido. Aguarde alguns segundos e tente novamente.' },
+          { error: 'Limite de requisições atingido. Aguarde e tente novamente.' },
           { status: 429 }
         );
       }
 
       return NextResponse.json(
-        { error: `Erro da API (${aiRes.status}). Verifique a chave AI_API_KEY.` },
+        { error: `Erro da API (${aiRes.status}). Verifique a chave OPENROUTER_API_KEY.` },
         { status: 502 }
       );
     }
@@ -255,7 +255,7 @@ export async function POST(
 
     if (!reply) {
       return NextResponse.json(
-        { error: 'A IA não retornou resposta. Tente novamente.' },
+        { error: 'A IA não retornou resposta.' },
         { status: 500 }
       );
     }
