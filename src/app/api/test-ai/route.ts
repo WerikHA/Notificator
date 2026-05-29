@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
-  const aiModel = process.env.AI_MODEL || 'minimax/minimax-m2.5:free';
+  const aiModel = process.env.AI_MODEL || 'meta-llama/llama-3.1-8b-instruct:free';
 
   console.log('=== TESTE AI ===');
   console.log('OPENROUTER_API_KEY existe:', !!process.env.OPENROUTER_API_KEY);
