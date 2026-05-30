@@ -7,6 +7,7 @@ import { Plus, RefreshCw, Shield, LogOut, Settings, ChevronDown, ChevronUp } fro
 import ClientList from '@/components/admin/ClientList';
 import ClientForm from '@/components/admin/ClientForm';
 import SettingsPanel from '@/components/admin/SettingsPanel';
+import SuggestionsPanel from '@/components/admin/SuggestionsPanel';
 
 interface Client {
   id: string;
@@ -158,6 +159,9 @@ export default function AdminPage() {
             }}
           />
         )}
+
+        {/* Painel de Sugestões da IA */}
+        <SuggestionsPanel clients={clients} />
 
         {/* Formulário de cliente */}
         {showForm && (

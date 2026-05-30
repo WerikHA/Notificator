@@ -18,6 +18,29 @@ interface Settings {
   metaAccessToken: string;
 }
 
+interface SuggestionItem {
+  id: string;
+  type: 'pause' | 'resume' | 'increase_budget' | 'decrease_budget';
+  title: string;
+  description: string;
+  parameters: Record<string, any>;
+  status: 'pending' | 'applied' | 'rejected' | 'failed';
+  appliedAt?: string;
+  error?: string;
+}
+
+interface Suggestion {
+  id: string;
+  clientId: string;
+  clientName: string;
+  campaignId: string;
+  campaignName: string;
+  summary: string;
+  suggestions: SuggestionItem[];
+  status: 'pending' | 'partially_applied' | 'fully_applied' | 'rejected';
+  createdAt: string;
+}
+
 interface DbSchema {
   examples: { id: number; name: string; createdAt: string }[];
   metrics?: {
@@ -27,20 +50,38 @@ interface DbSchema {
   };
   clients: Client[];
   settings: Settings;
+  suggestions: Suggestion[];
 }
 
 const DB_FILE_NAME = 'db.json';
 const DB_DIR_PATH = process.env.DATABASE_DIR || './data';
 const DB_FULL_PATH = path.resolve(process.cwd(), DB_DIR_PATH, DB_FILE_NAME);
 
+const DEFAULT_DATA: DbSchema = {
+  examples: [],
+  metrics: { campaigns: [], daily: [], totals: {} },
+  clients: [],
+  settings: { metaAccessToken: '' },
+  suggestions: [],
+};
+
 let dbInstance: Low<DbSchema> | null = null;
 
 export async function getDb(): Promise<Low<DbSchema>> {
   if (dbInstance) {
     if (dbInstance.data) {
+      if (!dbInstance.data.suggestions) {
+        dbInstance.data.suggestions = [];
+      }
       return dbInstance;
     }
     await dbInstance.read();
+    if (!dbInstance.data) {
+      dbInstance.data = DEFAULT_DATA;
+    }
+    if (!dbInstance.data.suggestions) {
+      dbInstance.data.suggestions = [];
+    }
     return dbInstance;
   }
 
@@ -51,14 +92,16 @@ export async function getDb(): Promise<Low<DbSchema>> {
     }
 
     const adapter = new JSONFile<DbSchema>(DB_FULL_PATH);
-    dbInstance = new Low<DbSchema>(adapter, { 
-      examples: [],
-      metrics: { campaigns: [], daily: [], totals: {} },
-      clients: [],
-      settings: { metaAccessToken: '' }
-    });
+    dbInstance = new Low<DbSchema>(adapter, DEFAULT_DATA);
 
     await dbInstance.read();
+
+    if (!dbInstance.data) {
+      dbInstance.data = DEFAULT_DATA;
+    }
+    if (!dbInstance.data.suggestions) {
+      dbInstance.data.suggestions = [];
+    }
 
     console.log(`Database initialized/loaded from: ${DB_FULL_PATH}`);
 
