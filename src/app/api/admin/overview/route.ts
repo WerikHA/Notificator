@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/database';
 
 const MSG_TYPE = 'onsite_conversion.total_messaging_connection';
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
 
 function extractMessages(data: any): number {
   let count = 0;
@@ -148,10 +149,27 @@ async function generateQuickSuggestions(clientName: string, totals: any, campaig
   }
 }
 
+function isCacheFresh(generatedAt: string): boolean {
+  if (!generatedAt) return false;
+  const generated = new Date(generatedAt).getTime();
+  const now = Date.now();
+  return (now - generated) < CACHE_TTL_MS;
+}
+
+function getNextRefreshTime(): string {
+  const now = new Date();
+  const nextNoon = new Date(now);
+  nextNoon.setHours(12, 0, 0, 0);
+  if (now.getHours() >= 12) {
+    nextNoon.setDate(nextNoon.getDate() + 1);
+  }
+  return nextNoon.toISOString();
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const refresh = searchParams.get('refresh') === 'true';
+    const forceRefresh = searchParams.get('forceRefresh') === 'true';
     const db = await getDb();
     const clients = db.data?.clients || [];
 
@@ -161,6 +179,24 @@ export async function GET(request: NextRequest) {
     if (!db.data.suggestions) {
       db.data.suggestions = [];
     }
+    if (!db.data.overviewCache) {
+      (db.data as any).overviewCache = null;
+    }
+
+    const cache = (db.data as any).overviewCache;
+    const cacheIsValid = !forceRefresh && cache && isCacheFresh(cache.generatedAt);
+
+    if (cacheIsValid) {
+      console.log('[Overview] Usando cache. Proxima atualizacao:', getNextRefreshTime());
+      return NextResponse.json({
+        clients: cache.clients,
+        cached: true,
+        generatedAt: cache.generatedAt,
+        nextRefresh: getNextRefreshTime(),
+      });
+    }
+
+    console.log('[Overview] Cache invalido ou forçado. Gerando dados frescos...');
 
     const overview = await Promise.all(
       clients.map(async (client) => {
@@ -176,7 +212,7 @@ export async function GET(request: NextRequest) {
         let aiSuggestions = existing;
 
         if (mr.status === 'ok' && mr.totals && mr.campaigns.length > 0) {
-          if (existing.length === 0 || refresh) {
+          if (existing.length === 0 || forceRefresh) {
             const ai = await generateQuickSuggestions(client.name, mr.totals, mr.campaigns);
             if (ai) {
               const tips = (ai.tips || []).map((tip: any) => ({
@@ -216,8 +252,19 @@ export async function GET(request: NextRequest) {
       })
     );
 
+    (db.data as any).overviewCache = {
+      clients: overview,
+      generatedAt: new Date().toISOString(),
+    };
+
     await db.write();
-    return NextResponse.json({ clients: overview });
+
+    return NextResponse.json({
+      clients: overview,
+      cached: false,
+      generatedAt: new Date().toISOString(),
+      nextRefresh: getNextRefreshTime(),
+    });
   } catch (error) {
     console.error('Erro ao buscar overview:', error);
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });

@@ -58,6 +58,11 @@ interface OverviewSuggestion {
   createdAt: string;
 }
 
+interface OverviewCache {
+  clients: any[];
+  generatedAt: string;
+}
+
 interface DbSchema {
   examples: { id: number; name: string; createdAt: string }[];
   metrics?: {
@@ -68,6 +73,7 @@ interface DbSchema {
   clients: Client[];
   settings: Settings;
   suggestions: (CampaignSuggestion | OverviewSuggestion)[];
+  overviewCache: OverviewCache | null;
 }
 
 const DB_FILE_NAME = 'db.json';
@@ -80,6 +86,7 @@ const DEFAULT_DATA: DbSchema = {
   clients: [],
   settings: { metaAccessToken: '' },
   suggestions: [],
+  overviewCache: null,
 };
 
 let dbInstance: Low<DbSchema> | null = null;
@@ -90,6 +97,9 @@ export async function getDb(): Promise<Low<DbSchema>> {
       if (!dbInstance.data.suggestions) {
         dbInstance.data.suggestions = [];
       }
+      if (dbInstance.data.overviewCache === undefined) {
+        dbInstance.data.overviewCache = null;
+      }
       return dbInstance;
     }
     await dbInstance.read();
@@ -98,6 +108,9 @@ export async function getDb(): Promise<Low<DbSchema>> {
     }
     if (!dbInstance.data.suggestions) {
       dbInstance.data.suggestions = [];
+    }
+    if (dbInstance.data.overviewCache === undefined) {
+      dbInstance.data.overviewCache = null;
     }
     return dbInstance;
   }
@@ -118,6 +131,9 @@ export async function getDb(): Promise<Low<DbSchema>> {
     }
     if (!dbInstance.data.suggestions) {
       dbInstance.data.suggestions = [];
+    }
+    if (dbInstance.data.overviewCache === undefined) {
+      dbInstance.data.overviewCache = null;
     }
 
     console.log(`Database initialized/loaded from: ${DB_FULL_PATH}`);

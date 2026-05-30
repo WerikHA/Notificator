@@ -392,106 +392,118 @@
       "createdAt": "2026-05-30T02:09:55.179Z"
     },
     {
-      "id": "acee95d1-8353-4f03-a034-2b28b1e14955",
-      "clientId": "d92f43cf-8d70-45c0-8f2c-e4cd0259b8ae",
-      "clientName": "OMNI CATANDUVA",
-      "summary": "As campanhas apresentam CTR baixo (0.28%) e CPM elevado na primeira campanha (R$19.94). A segunda campanha mostra melhor performance com CTR 1.67% e CPM R$11.79. O custo por mensagem (R$7.57) indica oportunidade de otimização.",
-      "healthScore": 75,
-      "tips": [
-        {
-          "id": "15a1cdc5-aabb-478d-85d9-d0d81d8260a5",
-          "text": "Otimizar criativos da campanha 1 (VÍDEONOVO) para aumentar CTR acima de 0.5%",
-          "priority": "alta",
-          "status": "pending"
-        },
-        {
-          "id": "8f64b05f-ffce-4aac-ace9-7eff203f0e76",
-          "text": "Reduzir CPM da campanha 1 através de novos públicos ou horários",
-          "priority": "alta",
-          "status": "pending"
-        },
-        {
-          "id": "e82f4f35-b8ef-4bc7-8352-78f1a8a3efe6",
-          "text": "Escalar estratégias da campanha 2 (Feirão Mulher) para outras campanhas",
-          "priority": "media",
-          "status": "pending"
-        },
-        {
-          "id": "765c1514-7f00-4cb0-b9b9-11109df08e59",
-          "text": "Testar novos formatos de anúncio para melhorar engajamento geral",
-          "priority": "media",
-          "status": "pending"
-        }
-      ],
-      "createdAt": "2026-05-30T02:31:19.066Z"
-    },
-    {
-      "id": "ea0365e7-5619-4f64-b43e-41d29c6ff29a",
-      "clientId": "e97d8772-6707-4e0a-b46c-e94e54d09290",
-      "clientName": "Panossi",
-      "summary": "Panossi investiu R$548.56 em 30 dias, gerando 86 mensagens com CTR de 2.23% e CPM de R$13.27. A campanha 'Atração de Projetos' teve desempenho semelhante, mas com CPM ligeiramente mais alto (R$13.99). O custo por mensagem (R$6.38) indica oportunidade de otimização.",
-      "healthScore": 75,
-      "tips": [
-        {
-          "id": "6098049e-467c-4b79-86ac-f42db9dec09b",
-          "text": "Otimize a landing page para aumentar a taxa de conversão de cliques em mensagens.",
-          "priority": "media",
-          "status": "pending"
-        },
-        {
-          "id": "8a070a60-1320-4b47-9769-6d25fd631492",
-          "text": "Revise a campanha 'Atração de Projetos' para reduzir o CPM (R$13.99) e teste novos criativos.",
-          "priority": "media",
-          "status": "pending"
-        },
-        {
-          "id": "ff9871d3-0429-47b2-ad3a-14b9b8f14af5",
-          "text": "Foque em estratégias que reduzam o CPC (R$0.59) e melhorem o ROI por mensagem.",
-          "priority": "baixa",
-          "status": "pending"
-        },
-        {
-          "id": "a4139e1a-4c01-4fd9-8527-75b167497320",
-          "text": "Monitore o CTR geral (2.23%) e teste segmentações para aprimorar o engajamento.",
-          "priority": "baixa",
-          "status": "pending"
-        }
-      ],
-      "createdAt": "2026-05-30T02:31:19.578Z"
-    },
-    {
-      "id": "874bf9a6-9408-4d4a-91ce-cd5be3fa487c",
+      "id": "ba59b4fe-5384-4710-9950-5c3e461f2298",
       "clientId": "89d370cc-06fc-4633-9640-6a842c3c6ec0",
       "clientName": "V8",
-      "summary": "A campanha apresenta um custo por mensagem saudável e um CTR acima da média para a maioria dos nichos. O volume de investimento é baixo, mas a eficiência de conversão inicial é positiva.",
-      "healthScore": 82,
+      "summary": "A campanha V8 gastou R$70,10, gerou 15 mensagens e 116 cliques, com CTR de 1,89% e CPC de R$0,64. O custo por mil impressões (CPM) ficou em R$12,06, abaixo da faixa de alerta. O custo por mensagem foi de R$4,74, indicando boa eficiência na conversão de mensagens.",
+      "healthScore": 75,
       "tips": [
         {
-          "id": "149d3e82-ed24-40b2-850f-98281999e902",
-          "text": "Aumentar gradualmente o orçamento para escalar o volume de mensagens, mantendo o custo por lead.",
-          "priority": "média",
-          "status": "pending"
-        },
-        {
-          "id": "a3c37b06-6476-4724-9968-908115c09f85",
-          "text": "Testar novos criativos para tentar elevar o CTR acima de 2% e reduzir ainda mais o CPC.",
-          "priority": "média",
-          "status": "pending"
-        },
-        {
-          "id": "38a1aee3-21b6-49f2-8e79-83b6ccc63f9d",
-          "text": "Analisar a taxa de conversão de mensagens em vendas para validar o ROI real da operação.",
+          "id": "57c129c2-79cf-4705-85ed-45c229e51243",
+          "text": "Teste variações de criativos para aumentar o CTR, focando em imagens ou vídeos mais envolventes.",
           "priority": "alta",
           "status": "pending"
         },
         {
-          "id": "0210d790-b3bf-41db-af7e-71809a525e65",
-          "text": "Segmentar públicos semelhantes (Lookalike) com base em quem já enviou mensagens.",
+          "id": "a9c44481-bd60-4578-acb0-55bb106ae8e8",
+          "text": "Ajuste o público-alvo para segmentar usuários com maior propensão a enviar mensagens, reduzindo o custo por mensagem.",
+          "priority": "alta",
+          "status": "pending"
+        },
+        {
+          "id": "d079a483-57f4-429a-b988-32f1bec79861",
+          "text": "Implemente testes A/B de chamadas à ação (CTA) nos anúncios para melhorar a taxa de cliques.",
+          "priority": "média",
+          "status": "pending"
+        },
+        {
+          "id": "10b86da1-bfae-4a3a-9124-564bf38ab785",
+          "text": "Monitore o desempenho diário e paute o orçamento em horários de maior engajamento.",
+          "priority": "média",
+          "status": "pending"
+        },
+        {
+          "id": "4e2ca48e-9e60-45d9-8463-09e34ba20f87",
+          "text": "Considere usar o formato de anúncio de mensagem direta (Messenger) para facilitar a comunicação inicial.",
           "priority": "baixa",
           "status": "pending"
         }
       ],
-      "createdAt": "2026-05-30T02:31:22.363Z"
+      "createdAt": "2026-05-30T02:35:12.849Z"
+    },
+    {
+      "id": "e4711254-f770-4136-aad5-86b8cbb5e77d",
+      "clientId": "e97d8772-6707-4e0a-b46c-e94e54d09290",
+      "clientName": "Panossi",
+      "summary": "A conta gastou R$ 548,56 gerando 41.324 impressões, 923 cliques e 86 mensagens, com CTR de 2,23% e CPM de R$ 13,27.",
+      "healthScore": 78,
+      "tips": [
+        {
+          "id": "8e98ae79-8017-417b-b29e-a698be6008d1",
+          "text": "Teste novos criativos e chamadas para melhorar ainda mais o CTR, que ainda tem margem de crescimento.",
+          "priority": "alta",
+          "status": "pending"
+        },
+        {
+          "id": "5b2c7345-d2d5-4452-9445-f4de2deaa7b6",
+          "text": "Segmente audiências semelhantes (lookalike) baseadas nos usuários que enviaram mensagens para ampliar o volume de leads.",
+          "priority": "média",
+          "status": "pending"
+        },
+        {
+          "id": "be6260c8-075c-4560-be41-77aff102f67d",
+          "text": "Ajuste lances ou teste otimização para custo por mensagem, buscando reduzir o custo médio de R$ 6,38 por mensagem.",
+          "priority": "média",
+          "status": "pending"
+        },
+        {
+          "id": "8ca8463d-1da0-4775-8dbe-81942abc2f97",
+          "text": "Monitore a frequência para evitar fadiga criativa; se a frequência ultrapassar 2, considere rotacionar anúncios.",
+          "priority": "baixa",
+          "status": "pending"
+        },
+        {
+          "id": "278b0f5c-4649-4433-9404-eb539574d1e5",
+          "text": "Implemente testes A/B de formatos (carrossel vs. vídeo) para identificar o tipo de criativo que gera mais cliques e mensagens.",
+          "priority": "baixa",
+          "status": "pending"
+        }
+      ],
+      "createdAt": "2026-05-30T02:35:22.304Z"
+    },
+    {
+      "id": "6e3a03db-1377-4429-b11b-c95793803a86",
+      "clientId": "d92f43cf-8d70-45c0-8f2c-e4cd0259b8ae",
+      "clientName": "OMNI CATANDUVA",
+      "summary": "As campanhas gastaram R$ 1.332, gerando 318k impressões e 899 cliques, mas o CTR geral está baixo (0.28%). A campanha de vídeo tem CPM alto (R$ 19,94) e custo por mensagem elevado, enquanto o Feirão Mulher tem melhor desempenho.",
+      "healthScore": 62,
+      "tips": [
+        {
+          "id": "3a4f9711-26cf-46b1-af7e-85f76424c6a6",
+          "text": "Reduza o CPM da campanha de vídeo ajustando segmentação ou testando criativos mais curtos e impactantes.",
+          "priority": "alta",
+          "status": "pending"
+        },
+        {
+          "id": "bdb83009-d8ba-4beb-9649-441ff270cc10",
+          "text": "Aumente o CTR geral melhorando a chamada para ação (CTA) e usando imagens ou vídeos mais relevantes ao público de Catanduva.",
+          "priority": "alta",
+          "status": "pending"
+        },
+        {
+          "id": "235d07b2-9b53-4f65-9200-114661f5483e",
+          "text": "Otimize o custo por mensagem (R$ 7,57) focando em anúncios que incentivem diretamente o envio de mensagens, como botões de WhatsApp.",
+          "priority": "média",
+          "status": "pending"
+        },
+        {
+          "id": "6a1ea120-070c-4e93-be24-ab58006a507f",
+          "text": "Realize testes A/B nos textos e criativos da campanha Feirão Mulher para tentar replicar seu bom CTR (1,67%) nas demais campanhas.",
+          "priority": "média",
+          "status": "pending"
+        }
+      ],
+      "createdAt": "2026-05-30T02:35:24.482Z"
     }
   ]
 }
