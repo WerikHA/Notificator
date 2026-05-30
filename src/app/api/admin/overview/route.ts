@@ -1,18 +1,13 @@
-` blocks inside the code output.
-
-I need to rewrite the file completely.</think>O arquivo ainda está corrompido no disco. Vou reescrevê-lo completamente:
-
-<dyad-write path="src/app/api/admin/overview/route.ts" description="Reescrevendo a API de overview limpa e funcional">
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/database';
 
-const MESSAGE_ACTION_TYPE = 'onsite_conversion.total_messaging_connection';
+const MSG_TYPE = 'onsite_conversion.total_messaging_connection';
 
 function extractMessages(data: any): number {
   let count = 0;
   if (data.actions && Array.isArray(data.actions)) {
     data.actions.forEach((a: any) => {
-      if (a.action_type === MESSAGE_ACTION_TYPE) {
+      if (a.action_type === MSG_TYPE) {
         count += parseInt(a.value || '0');
       }
     });
@@ -23,40 +18,32 @@ function extractMessages(data: any): number {
   return count;
 }
 
-function getDateRange() {
+function makeDateRange() {
   const now = new Date();
   const since = new Date();
   since.setDate(now.getDate() - 30);
-  const formatDate = (date: Date) => date.toISOString().split('T')[0];
-  return `{"since":"${formatDate(since)}","until":"${formatDate(now)}"}`;
+  const f = (d: Date) => d.toISOString().split('T')[0];
+  return JSON.stringify({ since: f(since), until: f(now) });
 }
 
-const CAMPAIGN_STATUS_FILTER = encodeURIComponent(JSON.stringify([
-  { "field": "campaign.effective_status", "operator": "NOT_IN", "value": ["DELETED", "ARCHIVED"] }
+const CAMP_FILTER = encodeURIComponent(JSON.stringify([
+  { field: 'campaign.effective_status', operator: 'NOT_IN', value: ['DELETED', 'ARCHIVED'] }
 ]));
 
 async function fetchClientMetrics(accessToken: string, accountId: string) {
-  const formattedId = accountId.startsWith('act_') ? accountId : `act_${accountId}`;
-  const baseUrl = `https://graph.facebook.com/v19.0/${formattedId}/insights`;
-  const timeRange = getDateRange();
-  const baseFields = 'spend,impressions,reach,clicks,actions,results,cpc,cpm,ctr,frequency';
+  const fid = accountId.startsWith('act_') ? accountId : 'act_' + accountId;
+  const base = 'https://graph.facebook.com/v19.0/' + fid + '/insights';
+  const tr = makeDateRange();
+  const fields = 'spend,impressions,reach,clicks,actions,results,cpc,cpm,ctr,frequency';
 
   try {
-    const totalsRes = await fetch(
-      `${baseUrl}?access_token=${accessToken}&level=account&fields=${baseFields}&time_range=${encodeURIComponent(timeRange)}`,
-      { signal: AbortSignal.timeout(15000) }
-    );
-    const totalsJson = await totalsRes.json();
+    const tUrl = base + '?access_token=' + accessToken + '&level=account&fields=' + fields + '&time_range=' + encodeURIComponent(tr);
+    const tRes = await fetch(tUrl, { signal: AbortSignal.timeout(15000) });
+    const tJson = await tRes.json();
+    if (tJson.error) return { error: tJson.error.message, status: 'error' as const };
+    if (!tJson.data || tJson.data.length === 0) return { totals: null, campaigns: [], status: 'no-data' as const };
 
-    if (totalsJson.error) {
-      return { error: totalsJson.error.message, status: 'error' as const };
-    }
-
-    if (!totalsJson.data || totalsJson.data.length === 0) {
-      return { totals: null, campaigns: [], status: 'no-data' as const };
-    }
-
-    const t = totalsJson.data[0];
+    const t = tJson.data[0];
     const msgs = extractMessages(t);
     const spend = parseFloat(t.spend || '0');
     const impressions = parseInt(t.impressions || '0');
@@ -64,24 +51,18 @@ async function fetchClientMetrics(accessToken: string, accountId: string) {
     const clicks = parseInt(t.clicks || '0');
 
     const totals = {
-      spend,
-      impressions,
-      reach,
-      clicks,
-      messages: msgs,
+      spend, impressions, reach, clicks, messages: msgs,
       cpm: parseFloat(t.cpm || '0'),
       cpc: parseFloat(t.cpc || '0'),
       ctr: parseFloat(t.ctr || '0'),
       costPerMessage: msgs > 0 ? spend / msgs : 0,
     };
 
-    const campRes = await fetch(
-      `${baseUrl}?access_token=${accessToken}&level=campaign&fields=campaign_id,campaign_name,${baseFields}&time_range=${encodeURIComponent(timeRange)}&limit=50&filtering=${CAMPAIGN_STATUS_FILTER}`,
-      { signal: AbortSignal.timeout(15000) }
-    );
-    const campJson = await campRes.json();
+    const cUrl = base + '?access_token=' + accessToken + '&level=campaign&fields=campaign_id,campaign_name,' + fields + '&time_range=' + encodeURIComponent(tr) + '&limit=50&filtering=' + CAMP_FILTER;
+    const cRes = await fetch(cUrl, { signal: AbortSignal.timeout(15000) });
+    const cJson = await cRes.json();
 
-    const campaigns = (campJson.data || [])
+    const campaigns = (cJson.data || [])
       .filter((c: any) => parseFloat(c.spend || '0') > 0 || parseInt(c.impressions || '0') > 0)
       .map((c: any) => ({
         id: c.campaign_id,
@@ -96,78 +77,72 @@ async function fetchClientMetrics(accessToken: string, accountId: string) {
       }));
 
     return { totals, campaigns, status: 'ok' as const };
-  } catch (error: any) {
-    return { error: error.name === 'TimeoutError' ? 'Timeout' : 'Erro de conexao', status: 'error' as const };
+  } catch {
+    return { error: 'Erro de conexao', status: 'error' as const };
   }
 }
 
 async function generateQuickSuggestions(clientName: string, totals: any, campaigns: any[]) {
   const aiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY;
   const aiModel = process.env.AI_MODEL || 'deepseek/deepseek-r1-0528:free';
-
   if (!aiKey || !totals || campaigns.length === 0) return null;
 
-  const campaignsText = campaigns.slice(0, 8).map((c: any, i: number) => {
-    return `${i + 1}. "${c.name}" - R$${c.spend.toFixed(2)} | ${c.messages} msgs | CTR ${c.ctr.toFixed(2)}% | CPC R$${c.cpc.toFixed(2)} | CPM R$${c.cpm.toFixed(2)}`;
-  }).join('\n');
+  const campLines: string[] = [];
+  campaigns.slice(0, 8).forEach((c: any, i: number) => {
+    campLines.push(
+      String(i + 1) + '. ' + c.name +
+      ' - R$' + c.spend.toFixed(2) +
+      ' | ' + c.messages + ' msgs' +
+      ' | CTR ' + c.ctr.toFixed(2) + '%' +
+      ' | CPC R$' + c.cpc.toFixed(2) +
+      ' | CPM R$' + c.cpm.toFixed(2)
+    );
+  });
 
-  const prompt = [
-    `Analise as campanhas Meta Ads de "${clientName}" e gere um resumo executivo + dicas.`,
-    ``,
-    `METRICAS (30 dias):`,
-    `Total gasto: R$ ${totals.spend.toFixed(2)}`,
-    `Impressoes: ${totals.impressions}`,
-    `Cliques: ${totals.clicks}`,
-    `Mensagens: ${totals.messages}`,
-    `CTR: ${totals.ctr.toFixed(2)}%`,
-    `CPM: R$ ${totals.cpm.toFixed(2)}`,
-    `CPC: R$ ${totals.cpc.toFixed(2)}`,
-    `Custo por mensagem: R$ ${totals.costPerMessage.toFixed(2)}`,
-    ``,
-    `CAMPANHAS:`,
-    campaignsText,
-    ``,
-    `IMPORTANTE: Responda APENAS com JSON valido, sem markdown.`,
-    `{`,
-    `  "summary": "Resumo executivo de 2-3 frases sobre o desempenho geral",`,
-    `  "healthScore": 75,`,
-    `  "tips": [`,
-    `    { "text": "Dica especifica de melhoria", "priority": "alta ou media ou baixa" }`,
-    `  ]`,
-    `}`,
-    ``,
-    `Regras:`,
-    `- healthScore de 0 a 100 baseado no desempenho`,
-    `- Gere 3-5 dicas relevantes e especificas`,
-    `- Prioridade alta para problemas criticos (CPM > R$15, CTR < 0.5%)`,
-    `- Priorize custo por mensagem como metrica principal`,
-  ].join('\n');
+  const p: string[] = [];
+  p.push('Analise as campanhas Meta Ads de "' + clientName + '" e gere um resumo + dicas.');
+  p.push('');
+  p.push('METRICAS (30 dias):');
+  p.push('Total gasto: R$ ' + totals.spend.toFixed(2));
+  p.push('Impressoes: ' + totals.impressions);
+  p.push('Cliques: ' + totals.clicks);
+  p.push('Mensagens: ' + totals.messages);
+  p.push('CTR: ' + totals.ctr.toFixed(2) + '%');
+  p.push('CPM: R$ ' + totals.cpm.toFixed(2));
+  p.push('CPC: R$ ' + totals.cpc.toFixed(2));
+  p.push('Custo/msg: R$ ' + totals.costPerMessage.toFixed(2));
+  p.push('');
+  p.push('CAMPANHAS:');
+  campLines.forEach(function(line) { p.push(line); });
+  p.push('');
+  p.push('Responda APENAS com JSON valido sem markdown:');
+  p.push('{"summary":"resumo 2-3 frases","healthScore":75,"tips":[{"text":"dica","priority":"alta"}]}');
+  p.push('healthScore 0-100. 3-5 dicas. Alta se CPM>R$15 ou CTR<0.5%.');
+
+  const promptText = p.join('\n');
 
   try {
     const aiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${aiKey}`,
+        'Authorization': 'Bearer ' + aiKey,
         'HTTP-Referer': 'http://localhost:32107',
         'X-Title': 'AM Dashboard Traffic',
       },
       body: JSON.stringify({
         model: aiModel,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: 'user', content: promptText }],
         temperature: 0.3,
       }),
       signal: AbortSignal.timeout(30000),
     });
-
     if (!aiRes.ok) return null;
-
     const aiJson = await aiRes.json();
     const content = aiJson.choices?.[0]?.message?.content || '';
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-
-    return JSON.parse(jsonMatch[0]);
+    const m = content.match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    return JSON.parse(m[0]);
   } catch {
     return null;
   }
@@ -177,7 +152,6 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const refresh = searchParams.get('refresh') === 'true';
-
     const db = await getDb();
     const clients = db.data?.clients || [];
 
@@ -190,73 +164,59 @@ export async function GET(request: NextRequest) {
 
     const overview = await Promise.all(
       clients.map(async (client) => {
-        const existingSuggestions = (db.data!.suggestions || []).filter((s: any) => {
-          return s.clientId === client.id && 'healthScore' in s && 'tips' in s;
-        });
+        const existing = (db.data!.suggestions || []).filter((s: any) =>
+          s.clientId === client.id && 'healthScore' in s && 'tips' in s
+        );
 
         if (!client.isActive) {
-          return {
-            client,
-            metrics: null,
-            campaigns: [],
-            suggestions: existingSuggestions,
-            status: 'inactive',
-          };
+          return { client, metrics: null, campaigns: [], suggestions: existing, status: 'inactive' };
         }
 
-        const metricsResult = await fetchClientMetrics(client.metaAdsAccessToken, client.metaAdsAccountId);
+        const mr = await fetchClientMetrics(client.metaAdsAccessToken, client.metaAdsAccountId);
+        let aiSuggestions = existing;
 
-        let aiSuggestions = existingSuggestions;
-
-        if (metricsResult.status === 'ok' && metricsResult.totals && metricsResult.campaigns.length > 0) {
-          if (existingSuggestions.length === 0 || refresh) {
-            const aiResult = await generateQuickSuggestions(
-              client.name,
-              metricsResult.totals,
-              metricsResult.campaigns
-            );
-
-            if (aiResult) {
-              const newSuggestions = (aiResult.tips || []).map((tip: any) => ({
+        if (mr.status === 'ok' && mr.totals && mr.campaigns.length > 0) {
+          if (existing.length === 0 || refresh) {
+            const ai = await generateQuickSuggestions(client.name, mr.totals, mr.campaigns);
+            if (ai) {
+              const tips = (ai.tips || []).map((tip: any) => ({
                 id: crypto.randomUUID(),
                 text: tip.text,
                 priority: tip.priority || 'media',
                 status: 'pending' as const,
               }));
-
-              const summaryEntry = {
+              const entry = {
                 id: crypto.randomUUID(),
                 clientId: client.id,
                 clientName: client.name,
-                summary: aiResult.summary || '',
-                healthScore: aiResult.healthScore || 50,
-                tips: newSuggestions,
+                summary: ai.summary || '',
+                healthScore: ai.healthScore || 50,
+                tips,
                 createdAt: new Date().toISOString(),
               };
-
               db.data!.suggestions = [
-                ...(db.data!.suggestions || []).filter((s: any) => !(s.clientId === client.id && 'healthScore' in s && 'tips' in s)),
-                summaryEntry as any,
+                ...(db.data!.suggestions || []).filter((s: any) =>
+                  !(s.clientId === client.id && 'healthScore' in s && 'tips' in s)
+                ),
+                entry as any,
               ];
-
-              aiSuggestions = [summaryEntry as any];
+              aiSuggestions = [entry as any];
             }
           }
         }
 
         return {
           client,
-          metrics: metricsResult.totals || null,
-          campaigns: metricsResult.campaigns || [],
+          metrics: mr.totals || null,
+          campaigns: mr.campaigns || [],
           suggestions: aiSuggestions,
-          status: metricsResult.status,
-          error: metricsResult.error,
+          status: mr.status,
+          error: mr.error,
         };
       })
     );
 
     await db.write();
-
     return NextResponse.json({ clients: overview });
   } catch (error) {
     console.error('Erro ao buscar overview:', error);
