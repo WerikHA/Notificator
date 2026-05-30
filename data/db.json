@@ -390,6 +390,108 @@
       ],
       "status": "rejected",
       "createdAt": "2026-05-30T02:09:55.179Z"
+    },
+    {
+      "id": "acee95d1-8353-4f03-a034-2b28b1e14955",
+      "clientId": "d92f43cf-8d70-45c0-8f2c-e4cd0259b8ae",
+      "clientName": "OMNI CATANDUVA",
+      "summary": "As campanhas apresentam CTR baixo (0.28%) e CPM elevado na primeira campanha (R$19.94). A segunda campanha mostra melhor performance com CTR 1.67% e CPM R$11.79. O custo por mensagem (R$7.57) indica oportunidade de otimização.",
+      "healthScore": 75,
+      "tips": [
+        {
+          "id": "15a1cdc5-aabb-478d-85d9-d0d81d8260a5",
+          "text": "Otimizar criativos da campanha 1 (VÍDEONOVO) para aumentar CTR acima de 0.5%",
+          "priority": "alta",
+          "status": "pending"
+        },
+        {
+          "id": "8f64b05f-ffce-4aac-ace9-7eff203f0e76",
+          "text": "Reduzir CPM da campanha 1 através de novos públicos ou horários",
+          "priority": "alta",
+          "status": "pending"
+        },
+        {
+          "id": "e82f4f35-b8ef-4bc7-8352-78f1a8a3efe6",
+          "text": "Escalar estratégias da campanha 2 (Feirão Mulher) para outras campanhas",
+          "priority": "media",
+          "status": "pending"
+        },
+        {
+          "id": "765c1514-7f00-4cb0-b9b9-11109df08e59",
+          "text": "Testar novos formatos de anúncio para melhorar engajamento geral",
+          "priority": "media",
+          "status": "pending"
+        }
+      ],
+      "createdAt": "2026-05-30T02:31:19.066Z"
+    },
+    {
+      "id": "ea0365e7-5619-4f64-b43e-41d29c6ff29a",
+      "clientId": "e97d8772-6707-4e0a-b46c-e94e54d09290",
+      "clientName": "Panossi",
+      "summary": "Panossi investiu R$548.56 em 30 dias, gerando 86 mensagens com CTR de 2.23% e CPM de R$13.27. A campanha 'Atração de Projetos' teve desempenho semelhante, mas com CPM ligeiramente mais alto (R$13.99). O custo por mensagem (R$6.38) indica oportunidade de otimização.",
+      "healthScore": 75,
+      "tips": [
+        {
+          "id": "6098049e-467c-4b79-86ac-f42db9dec09b",
+          "text": "Otimize a landing page para aumentar a taxa de conversão de cliques em mensagens.",
+          "priority": "media",
+          "status": "pending"
+        },
+        {
+          "id": "8a070a60-1320-4b47-9769-6d25fd631492",
+          "text": "Revise a campanha 'Atração de Projetos' para reduzir o CPM (R$13.99) e teste novos criativos.",
+          "priority": "media",
+          "status": "pending"
+        },
+        {
+          "id": "ff9871d3-0429-47b2-ad3a-14b9b8f14af5",
+          "text": "Foque em estratégias que reduzam o CPC (R$0.59) e melhorem o ROI por mensagem.",
+          "priority": "baixa",
+          "status": "pending"
+        },
+        {
+          "id": "a4139e1a-4c01-4fd9-8527-75b167497320",
+          "text": "Monitore o CTR geral (2.23%) e teste segmentações para aprimorar o engajamento.",
+          "priority": "baixa",
+          "status": "pending"
+        }
+      ],
+      "createdAt": "2026-05-30T02:31:19.578Z"
+    },
+    {
+      "id": "874bf9a6-9408-4d4a-91ce-cd5be3fa487c",
+      "clientId": "89d370cc-06fc-4633-9640-6a842c3c6ec0",
+      "clientName": "V8",
+      "summary": "A campanha apresenta um custo por mensagem saudável e um CTR acima da média para a maioria dos nichos. O volume de investimento é baixo, mas a eficiência de conversão inicial é positiva.",
+      "healthScore": 82,
+      "tips": [
+        {
+          "id": "149d3e82-ed24-40b2-850f-98281999e902",
+          "text": "Aumentar gradualmente o orçamento para escalar o volume de mensagens, mantendo o custo por lead.",
+          "priority": "média",
+          "status": "pending"
+        },
+        {
+          "id": "a3c37b06-6476-4724-9968-908115c09f85",
+          "text": "Testar novos criativos para tentar elevar o CTR acima de 2% e reduzir ainda mais o CPC.",
+          "priority": "média",
+          "status": "pending"
+        },
+        {
+          "id": "38a1aee3-21b6-49f2-8e79-83b6ccc63f9d",
+          "text": "Analisar a taxa de conversão de mensagens em vendas para validar o ROI real da operação.",
+          "priority": "alta",
+          "status": "pending"
+        },
+        {
+          "id": "0210d790-b3bf-41db-af7e-71809a525e65",
+          "text": "Segmentar públicos semelhantes (Lookalike) com base em quem já enviou mensagens.",
+          "priority": "baixa",
+          "status": "pending"
+        }
+      ],
+      "createdAt": "2026-05-30T02:31:22.363Z"
     }
   ]
 }

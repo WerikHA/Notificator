@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Settings, Download, Calendar, RefreshCw, AlertCircle, Loader2, ExternalLink, Users, User } from 'lucide-react';
 import { usePdfDownload } from '@/hooks/use-pdf-download';
 import { toast } from 'sonner';
-import AiChatPanel from '@/components/AiChatPanel';
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 const formatNumber = (val: number) => new Intl.NumberFormat('pt-BR').format(val);
@@ -478,9 +477,6 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
           </CardContent>
         </Card>
       </main>
-
-      {/* AI Chat Panel */}
-      <AiChatPanel slug={slug} period={period} />
     </div>
   );
 }
