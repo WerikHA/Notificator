@@ -29,7 +29,7 @@ interface SuggestionItem {
   error?: string;
 }
 
-interface Suggestion {
+interface CampaignSuggestion {
   id: string;
   clientId: string;
   clientName: string;
@@ -38,6 +38,23 @@ interface Suggestion {
   summary: string;
   suggestions: SuggestionItem[];
   status: 'pending' | 'partially_applied' | 'fully_applied' | 'rejected';
+  createdAt: string;
+}
+
+interface OverviewTip {
+  id: string;
+  text: string;
+  priority: string;
+  status: string;
+}
+
+interface OverviewSuggestion {
+  id: string;
+  clientId: string;
+  clientName: string;
+  summary: string;
+  healthScore: number;
+  tips: OverviewTip[];
   createdAt: string;
 }
 
@@ -50,7 +67,7 @@ interface DbSchema {
   };
   clients: Client[];
   settings: Settings;
-  suggestions: Suggestion[];
+  suggestions: (CampaignSuggestion | OverviewSuggestion)[];
 }
 
 const DB_FILE_NAME = 'db.json';

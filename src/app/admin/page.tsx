@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Plus, RefreshCw, Shield, LogOut, Settings, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, RefreshCw, Shield, LogOut, Settings, ChevronDown, ChevronUp, LayoutDashboard, Users } from 'lucide-react';
 import ClientList from '@/components/admin/ClientList';
 import ClientForm from '@/components/admin/ClientForm';
 import SettingsPanel from '@/components/admin/SettingsPanel';
 import SuggestionsPanel from '@/components/admin/SuggestionsPanel';
+import AdminOverview from '@/components/admin/AdminOverview';
 
 interface Client {
   id: string;
@@ -24,6 +25,8 @@ interface Settings {
   metaAccessToken: string;
 }
 
+type TabType = 'overview' | 'clients';
+
 export default function AdminPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +34,7 @@ export default function AdminPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -95,7 +99,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-[#0A0B0D] text-white">
       <header className="border-b border-gray-800 bg-[#18191A] p-4">
-        <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
+        <div className="max-w-6xl mx-auto w-full flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
               <Shield size={20} className="text-white" />
@@ -148,7 +152,33 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto w-full p-4 space-y-4">
+      <main className="max-w-6xl mx-auto w-full p-4 space-y-4">
+        {/* Tabs */}
+        <div className="flex items-center gap-1 bg-[#18191A] border border-gray-800 rounded-lg p-1 w-fit">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'overview'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
+          >
+            <LayoutDashboard size={16} />
+            Visão Geral
+          </button>
+          <button
+            onClick={() => setActiveTab('clients')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'clients'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
+          >
+            <Users size={16} />
+            Clientes
+          </button>
+        </div>
+
         {/* Painel de Configurações (colapsável) */}
         {showSettings && (
           <SettingsPanel
@@ -160,33 +190,43 @@ export default function AdminPage() {
           />
         )}
 
-        {/* Painel de Sugestões da IA */}
-        <SuggestionsPanel clients={clients} />
-
-        {/* Formulário de cliente */}
-        {showForm && (
-          <ClientForm
-            client={editingClient || undefined}
-            globalToken={settings?.metaAccessToken || ''}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
+        {/* Tab: Visão Geral */}
+        {activeTab === 'overview' && (
+          <AdminOverview />
         )}
 
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-white">
-            Clientes ({clients.length})
-          </h2>
-        </div>
+        {/* Tab: Clientes */}
+        {activeTab === 'clients' && (
+          <>
+            {/* Painel de Sugestões da IA */}
+            <SuggestionsPanel clients={clients} />
 
-        {loading ? (
-          <div className="text-center py-12 text-gray-400">Carregando...</div>
-        ) : (
-          <ClientList
-            clients={clients}
-            onEdit={handleEdit}
-            onRefresh={fetchClients}
-          />
+            {/* Formulário de cliente */}
+            {showForm && (
+              <ClientForm
+                client={editingClient || undefined}
+                globalToken={settings?.metaAccessToken || ''}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
+            )}
+
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium text-white">
+                Clientes ({clients.length})
+              </h2>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12 text-gray-400">Carregando...</div>
+            ) : (
+              <ClientList
+                clients={clients}
+                onEdit={handleEdit}
+                onRefresh={fetchClients}
+              />
+            )}
+          </>
         )}
       </main>
     </div>
