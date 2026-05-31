@@ -9,9 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid, BarChart, Bar, Legend } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings, Download, Calendar, RefreshCw, AlertCircle, Loader2, ExternalLink, Users, User } from 'lucide-react';
+import { Download, Calendar, RefreshCw, AlertCircle, Loader2, ExternalLink, Users, User, Target } from 'lucide-react';
 import { usePdfDownload } from '@/hooks/use-pdf-download';
 import { toast } from 'sonner';
+import { getObjectiveConfig, getObjectiveSummary, groupCampaignsByObjective } from '@/lib/campaign-objectives';
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 const formatNumber = (val: number) => new Intl.NumberFormat('pt-BR').format(val);
@@ -70,7 +71,6 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
     try {
       const res = await fetch(`/api/dashboard/${slug}/metrics?period=${p}`);
       const json = await res.json();
-      
       if (!res.ok) {
         setError(json.error || 'Erro ao carregar dados');
       } else {
@@ -89,9 +89,8 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
 
   const handleDownloadPdf = async () => {
     const clientName = data?.clientName || 'relatorio';
-    const slugName = slug;
     try {
-      await generatePdf('dashboard-content', `${clientName}-${slugName}`);
+      await generatePdf('dashboard-content', `${clientName}-${slug}`);
       toast.success('PDF baixado com sucesso!');
     } catch (error) {
       toast.error('Erro ao gerar PDF. Tente novamente.');
@@ -132,6 +131,9 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
   const ageBreakdown = data?.ageBreakdown || [];
   const clientName = data?.clientName || 'Cliente';
 
+  const objectiveSummary = getObjectiveSummary(campaigns);
+  const objectiveGroups = groupCampaignsByObjective(campaigns);
+
   const sparklineDataSpend = daily.map((d: any) => d.spend || 0);
   const sparklineDataMessages = daily.map((d: any) => d.messages || 0);
   const sparklineDataClicks = daily.map((d: any) => d.clicks || 0);
@@ -168,6 +170,24 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
     Investimento: a.spend,
     Mensagens: a.messages,
     Cliques: a.clicks,
+  }));
+
+  const OBJ_COLORS: Record<string, string> = {
+    OUTCOME_AWARENESS: '#A78BFA',
+    OUTCOME_ENGAGEMENT: '#60A5FA',
+    OUTCOME_TRAFFIC: '#34D399',
+    OUTCOME_LEADS: '#FBBF24',
+    OUTCOME_SALES: '#F87171',
+    OUTCOME_APP_PROMOTION: '#22D3EE',
+    UNKNOWN: '#6B7280',
+  };
+
+  const objectivePieData = objectiveSummary.map((o) => ({
+    name: getObjectiveConfig(o.objective).shortLabel,
+    value: o.totalSpend,
+    objective: o.objective,
+    count: o.count,
+    messages: o.totalMessages,
   }));
 
   return (
@@ -246,6 +266,27 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
           </div>
         )}
 
+        {/* Resumo por Objetivo */}
+        {objectiveSummary.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {objectiveSummary.map((o) => {
+              const config = getObjectiveConfig(o.objective);
+              return (
+                <div key={o.objective} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${config.bgColor}`}>
+                  <span className="text-sm">{config.icon}</span>
+                  <div>
+                    <p className={`text-xs font-medium ${config.color}`}>{config.label}</p>
+                    <p className="text-[10px] text-gray-500">
+                      {o.count} campanha(s) • {formatCurrency(o.totalSpend)} • {o.totalMessages} msgs
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Métricas Principais */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <MetricCard title="Investimento" value={totals.spend ? formatCurrency(totals.spend) : 'R$ 0,00'} change={totals.spendChange || 0} data={sparklineDataSpend} color="#EF4444" />
           <MetricCard title="Mensagens Iniciadas" value={totals.messages?.toString() || '0'} change={totals.messagesChange || 0} data={sparklineDataMessages} color="#10B981" />
@@ -255,6 +296,7 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Funil */}
           <div className="lg:col-span-3">
             <FunnelChart
               mainSteps={[
@@ -277,6 +319,7 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
             />
           </div>
 
+          {/* Gráfico + Cards de Custo */}
           <div className="lg:col-span-6 flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-4">
               <CostCard title="Custo por Mensagem" value={totals.costPerMessage ? formatCurrency(totals.costPerMessage) : 'R$ 0,00'} change={117.6} progress={65} progressColor="bg-green-500" target="R$ 7,57" />
@@ -309,67 +352,101 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
             </Card>
           </div>
 
-          <div className="lg:col-span-3">
+          {/* Distribuição por Objetivo + Gênero */}
+          <div className="lg:col-span-3 flex flex-col gap-4">
+            {/* Gráfico de Objetivos */}
+            {objectivePieData.length > 0 && (
+              <Card className="bg-[#18191A] border-gray-800 text-white">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <Target size={16} className="text-orange-400" />
+                    Por Objetivo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center">
+                  <div className="w-full h-36 relative">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={objectivePieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} paddingAngle={2} dataKey="value">
+                          {objectivePieData.map((entry: any, index: number) => (
+                            <Cell key={`cell-${index}`} fill={OBJ_COLORS[entry.objective] || '#6B7280'} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#fff'}}
+                          formatter={(value: number) => [formatCurrency(value), 'Investimento']}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="w-full mt-2 space-y-1.5">
+                    {objectivePieData.map((entry: any, index: number) => {
+                      const totalSpend = objectivePieData.reduce((sum: number, item: any) => sum + item.value, 0);
+                      const pct = totalSpend > 0 ? ((entry.value / totalSpend) * 100).toFixed(1) : '0';
+                      const color = OBJ_COLORS[entry.objective] || '#6B7280';
+                      return (
+                        <div key={index} className="flex items-center justify-between text-[11px]">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                            <span className="text-gray-400">{entry.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-500">{entry.count}x</span>
+                            <span className="text-gray-300">{pct}%</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Gênero */}
             <Card className="h-full bg-[#18191A] border-gray-800 text-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Users size={16} className="text-purple-400" />
-                  Distribuição por Gênero
+                  Gênero
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col items-center justify-center">
                 {genderPieData.length > 0 ? (
                   <>
-                    <div className="w-full h-48 relative">
+                    <div className="w-full h-36 relative">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={genderPieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value">
+                          <Pie data={genderPieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} paddingAngle={2} dataKey="value">
                             {genderPieData.map((entry: any, index: number) => (
-                              <Cell 
-                                key={`cell-${index}`} 
-                                fill={GENDER_COLOR_MAP[entry.gender] || '#6B7280'} 
-                              />
+                              <Cell key={`cell-${index}`} fill={GENDER_COLOR_MAP[entry.gender] || '#6B7280'} />
                             ))}
                           </Pie>
-                          <Tooltip 
+                          <Tooltip
                             contentStyle={{backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#fff'}}
-                            formatter={(value: number, name: string) => [`${formatNumber(value)} impressões`, name]}
+                            formatter={(value: number) => [`${formatNumber(value)} impressões`, 'Impressões']}
                           />
                         </PieChart>
                       </ResponsiveContainer>
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="w-16 h-16 bg-[#18191A] rounded-full flex items-center justify-center">
-                          <span className="text-xs text-gray-400">Total</span>
-                        </div>
-                      </div>
                     </div>
-                    <div className="w-full mt-4 space-y-2">
+                    <div className="w-full mt-3 space-y-1.5">
                       {genderPieData.map((entry: any, index: number) => {
                         const totalImpressions = genderPieData.reduce((sum: number, item: any) => sum + item.value, 0);
                         const percentage = totalImpressions > 0 ? ((entry.value / totalImpressions) * 100).toFixed(1) : '0';
                         const color = GENDER_COLOR_MAP[entry.gender] || '#6B7280';
                         return (
-                          <div key={index} className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full" style={{backgroundColor: color}}></div>
-                              <User size={12} style={{color}} />
+                          <div key={index} className="flex items-center justify-between text-[11px]">
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                              <User size={11} style={{ color }} />
                               <span className="text-gray-400">{entry.name}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-300">{formatNumber(entry.value)} imp.</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-gray-300">{formatNumber(entry.value)}</span>
                               <span className="text-gray-500">({percentage}%)</span>
                             </div>
                           </div>
                         );
                       })}
-                    </div>
-                    <div className="w-full mt-3 pt-3 border-t border-gray-700">
-                      {genderPieData.map((entry: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between text-[11px] mb-1">
-                          <span className="text-gray-500">{entry.name} - Investimento</span>
-                          <span className="text-gray-400">{formatCurrency(entry.spend)}</span>
-                        </div>
-                      ))}
                     </div>
                   </>
                 ) : (
@@ -380,6 +457,7 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
           </div>
         </div>
 
+        {/* Gráfico de Idade */}
         {ageChartData.length > 0 && (
           <Card className="bg-[#18191A] border-gray-800 text-white">
             <CardHeader>
@@ -429,53 +507,82 @@ export default function ClientDashboard({ params }: { params: Promise<{ slug: st
           </Card>
         )}
 
-        <Card className="bg-[#18191A] border-gray-800 text-white">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-700 hover:bg-transparent">
-                    <TableHead className="text-gray-400 w-[300px]">Campanhas</TableHead>
-                    <TableHead className="text-gray-400">Conjuntos</TableHead>
-                    <TableHead className="text-gray-400">Anúncios</TableHead>
-                    <TableHead className="text-gray-400 text-right">Investimento</TableHead>
-                    <TableHead className="text-gray-400 text-right">Cliques</TableHead>
-                    <TableHead className="text-gray-400 text-right">Mensagens</TableHead>
-                    <TableHead className="text-gray-400 text-center w-[60px]">Detalhes</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {campaigns.map((camp: any) => (
-                    <TableRow key={camp.id || Math.random()} className="border-gray-800 hover:bg-[#242526]">
-                      <TableCell className="font-medium text-sm">
-                        <Link
-                          href={`/dashboard/${slug}/campaign/${camp.campaignId || camp.id}`}
-                          className="text-blue-400 hover:text-blue-300 hover:underline truncate block max-w-[280px]"
-                        >
-                          {camp.campaignName}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-400">{camp.adSetName}</TableCell>
-                      <TableCell className="text-sm text-gray-400">{camp.adName}</TableCell>
-                      <TableCell className="text-right text-sm font-medium">{formatCurrency(camp.spend)}</TableCell>
-                      <TableCell className="text-right text-sm text-gray-300">{camp.clicks}</TableCell>
-                      <TableCell className="text-right text-sm text-blue-400 font-medium">{camp.messages}</TableCell>
-                      <TableCell className="text-center">
-                        <Link
-                          href={`/dashboard/${slug}/campaign/${camp.campaignId || camp.id}`}
-                          className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-                          title="Ver detalhes da campanha"
-                        >
-                          <ExternalLink size={14} />
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Tabela de Campanhas por Objetivo */}
+        {Object.entries(objectiveGroups).map(([objective, camps]) => {
+          const objConfig = getObjectiveConfig(objective);
+          const borderColor = OBJ_COLORS[objective] || '#6B7280';
+          return (
+            <Card key={objective} className="bg-[#18191A] border-gray-800 text-white">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{objConfig.icon}</span>
+                  <div>
+                    <CardTitle className="text-sm font-medium text-gray-300">
+                      {objConfig.label}
+                    </CardTitle>
+                    <p className="text-[11px] text-gray-500">{objConfig.description}</p>
+                  </div>
+                  <span className="ml-auto text-[11px] text-gray-500">{camps.length} campanha(s)</span>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-700 hover:bg-transparent">
+                        <TableHead className="text-gray-400 w-[300px]">Campanhas</TableHead>
+                        <TableHead className="text-gray-400">Conjuntos</TableHead>
+                        <TableHead className="text-gray-400 text-right">Investimento</TableHead>
+                        <TableHead className="text-gray-400 text-right">Cliques</TableHead>
+                        <TableHead className="text-gray-400 text-right">CTR</TableHead>
+                        <TableHead className="text-gray-400 text-right">CPC</TableHead>
+                        <TableHead className="text-gray-400 text-right">Mensagens</TableHead>
+                        <TableHead className="text-gray-400 text-center w-[60px]">Detalhes</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {camps.map((camp: any) => (
+                        <TableRow key={camp.id || Math.random()} className="border-gray-800 hover:bg-[#242526]">
+                          <TableCell className="font-medium text-sm">
+                            <Link
+                              href={`/dashboard/${slug}/campaign/${camp.campaignId || camp.id}`}
+                              className="text-blue-400 hover:text-blue-300 hover:underline truncate block max-w-[280px]"
+                            >
+                              {camp.campaignName}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="text-sm text-gray-400">{camp.adSetName}</TableCell>
+                          <TableCell className="text-right text-sm font-medium">{formatCurrency(camp.spend)}</TableCell>
+                          <TableCell className="text-right text-sm text-gray-300">{formatNumber(camp.clicks)}</TableCell>
+                          <TableCell className="text-right text-sm">
+                            <span className={
+                              objective === 'OUTCOME_AWARENESS' 
+                                ? 'text-gray-300'
+                                : camp.ctr >= 1 ? 'text-green-400' : camp.ctr >= 0.5 ? 'text-yellow-400' : 'text-red-400'
+                            }>
+                              {camp.ctr.toFixed(2)}%
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right text-sm text-gray-300">{formatCurrency(camp.cpc)}</TableCell>
+                          <TableCell className="text-right text-sm text-blue-400 font-medium">{camp.messages}</TableCell>
+                          <TableCell className="text-center">
+                            <Link
+                              href={`/dashboard/${slug}/campaign/${camp.campaignId || camp.id}`}
+                              className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+                              title="Ver detalhes da campanha"
+                            >
+                              <ExternalLink size={14} />
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </main>
     </div>
   );

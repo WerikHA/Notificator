@@ -47,8 +47,9 @@ async function fetchCampaignData(accessToken: string, accountId: string) {
   const totalsJson = await totalsRes.json();
   const accountTotals = totalsJson.data?.[0] || {};
 
+  // Buscar campanhas com objective
   const campRes = await fetch(
-    `${baseUrl}?access_token=${accessToken}&level=campaign&fields=campaign_id,campaign_name,${baseFields}&time_range=${encodeURIComponent(timeRange)}&limit=50&filtering=${CAMPAIGN_STATUS_FILTER}`
+    `${baseUrl}?access_token=${accessToken}&level=campaign&fields=campaign_id,campaign_name,objective,${baseFields}&time_range=${encodeURIComponent(timeRange)}&limit=50&filtering=${CAMPAIGN_STATUS_FILTER}`
   );
   const campJson = await campRes.json();
 
@@ -57,6 +58,7 @@ async function fetchCampaignData(accessToken: string, accountId: string) {
     .map((c: any) => ({
       id: c.campaign_id,
       name: c.campaign_name,
+      objective: c.objective || 'UNKNOWN',
       status: c.effective_status || 'ACTIVE',
       spend: parseFloat(c.spend || '0'),
       impressions: parseInt(c.impressions || '0'),
@@ -95,13 +97,15 @@ async function generateAISuggestions(clientName: string, accountData: any) {
   const campaignsText = accountData.campaigns.map((c: any, i: number) => {
     const avgCpm = at.spend > 0 ? at.spend / (at.impressions / 1000) : 0;
     const efficiency = c.cpm > 0 ? (avgCpm / c.cpm * 100).toFixed(0) : '0';
+    const objLabel = (c.objective || 'UNKNOWN').replace('OUTCOME_', '');
     return `${i + 1}. "${c.name}" (ID: ${c.id})
-   Status: ${c.status} | Gasto: R$${c.spend.toFixed(2)} | Imp: ${c.impressions} | Cliques: ${c.clicks}
+   Objetivo: ${objLabel} | Status: ${c.status} | Gasto: R$${c.spend.toFixed(2)} | Imp: ${c.impressions} | Cliques: ${c.clicks}
    Mensagens: ${c.messages} | CTR: ${c.ctr.toFixed(2)}% | CPC: R$${c.cpc.toFixed(2)} | CPM: R$${c.cpm.toFixed(2)}
    Freq: ${c.frequency.toFixed(2)} | Eficiência relativa: ${efficiency}%`;
   }).join('\n\n');
 
   const prompt = `Analise as campanhas Meta Ads da conta "${clientName}" e gere sugestões de otimização.
+Considere o OBJETIVO de cada campanha ao avaliar as métricas.
 
 📊 MÉTRICAS DA CONTA (últimos 30 dias):
 💰 Total gasto: R$${at.spend.toFixed(2)}
@@ -109,8 +113,16 @@ async function generateAISuggestions(clientName: string, accountData: any) {
 💬 Mensagens: ${at.messages} | CPM: R$${at.cpm.toFixed(2)} | CPC: R$${at.cpc.toFixed(2)}
 📈 CTR: ${at.ctr.toFixed(2)}%
 
-📋 CAMPANHAS:
+📋 CAMPANHAS (com objetivo):
 ${campaignsText}
+
+REGRAS POR OBJETIVO:
+- AWARENESS/Reconhecimento: foque em CPM baixo e alcance alto. CTR não é prioridade. Se CPM > R$15, sugira diminuir.
+- ENGAGEMENT/Engajamento: foque em CTR e mensagens. Custo por msg importa. CTR < 0.5% é ruim.
+- TRAFFIC/Tráfego: foque em CPC baixo e CTR alto. CPC > R$5 é caro.
+- LEADS: foque em custo por lead (mensagem) baixo. Se custo/msg > R$15, sugira pausar.
+- SALES/Vendas: foque em ROAS e custo por conversão.
+- APP_PROMOTION/App: foque em CPC e CTR.
 
 IMPORTANTE: Responda APENAS com JSON válido, sem markdown, sem \`\`\`, sem texto antes ou depois.
 O JSON deve ter exatamente esta estrutura:
@@ -119,7 +131,8 @@ O JSON deve ter exatamente esta estrutura:
     {
       "campaignId": "ID_DA_CAMPANHA",
       "campaignName": "NOME_DA_CAMPANHA",
-      "summary": "Resumo de 1-2 frases sobre o desempenho desta campanha",
+      "objective": "OBJETIVO",
+      "summary": "Resumo de 1-2 frases sobre o desempenho considerando o objetivo",
       "actions": [
         {
           "type": "pause ou resume ou increase_budget ou decrease_budget",
@@ -132,12 +145,8 @@ O JSON deve ter exatamente esta estrutura:
   ]
 }
 
-Regras:
-- Para cada campanha, gere 1-3 ações sugeridas
-- Se uma campanha tem CPM muito alto (> R$15), sugira PAUSE
-- Se uma campanha tem custo por mensagem > R$15, sugira PAUSE
-- Se uma campanha tem bom desempenho (custo/msg < R$5), sugira INCREASE_BUDGET
-- Se CTR < 0.5%, sugira PAUSE ou reduzir orçamento
+Regras gerais:
+- Para cada campanha, gere 1-3 ações sugeridas baseadas no objetivo
 - Para increase_budget, parameters deve ter {"budget_change_percent": 20}
 - Para decrease_budget, parameters deve ter {"budget_change_percent": -20}
 - Para pause/resume, parameters pode ser {}
@@ -227,6 +236,7 @@ export async function POST(request: NextRequest) {
             clientName: client.name,
             campaignId: aiSugg.campaignId,
             campaignName: aiSugg.campaignName || campaign?.name || 'Campanha',
+            objective: aiSugg.objective || campaign?.objective || 'UNKNOWN',
             summary: aiSugg.summary,
             suggestions: items,
             status: 'pending' as const,

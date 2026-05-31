@@ -4,24 +4,13 @@ import { getDb } from '@/lib/database';
 function getDateRange(period: string) {
   const now = new Date();
   let since = new Date();
-
   switch (period) {
-    case 'today':
-      since = new Date(now);
-      break;
-    case '7d':
-      since.setDate(now.getDate() - 7);
-      break;
-    case '15d':
-      since.setDate(now.getDate() - 15);
-      break;
-    case '30d':
-      since.setDate(now.getDate() - 30);
-      break;
-    default:
-      since.setDate(now.getDate() - 30);
+    case 'today': since = new Date(now); break;
+    case '7d': since.setDate(now.getDate() - 7); break;
+    case '15d': since.setDate(now.getDate() - 15); break;
+    case '30d': since.setDate(now.getDate() - 30); break;
+    default: since.setDate(now.getDate() - 30);
   }
-
   const formatDate = (date: Date) => date.toISOString().split('T')[0];
   return `{"since":"${formatDate(since)}","until":"${formatDate(now)}"}`;
 }
@@ -30,7 +19,6 @@ const MESSAGE_ACTION_TYPE = 'onsite_conversion.total_messaging_connection';
 
 function extractMessages(data: any): number {
   let count = 0;
-  
   if (data.actions && Array.isArray(data.actions)) {
     data.actions.forEach((a: any) => {
       if (a.action_type === MESSAGE_ACTION_TYPE) {
@@ -38,11 +26,9 @@ function extractMessages(data: any): number {
       }
     });
   }
-  
   if (count === 0 && data.results) {
     count = parseInt(data.results || '0');
   }
-
   return count;
 }
 
@@ -65,7 +51,6 @@ async function fetchMetaAdsData(accountId: string, accessToken: string, period: 
     if (totalsJson.error) {
       return { error: totalsJson.error.message || 'Erro na API Meta', status: 'error' };
     }
-
     if (!totalsJson.data || totalsJson.data.length === 0) {
       return { error: 'Nenhum dado encontrado', status: 'no-data' };
     }
@@ -78,11 +63,7 @@ async function fetchMetaAdsData(accountId: string, accessToken: string, period: 
     const clicks = parseInt(t.clicks || '0');
 
     const finalTotals = {
-      spend,
-      impressions,
-      reach,
-      clicks,
-      messages: msgs,
+      spend, impressions, reach, clicks, messages: msgs,
       frequency: parseFloat(t.frequency || '0'),
       cpm: parseFloat(t.cpm || '0'),
       cpc: parseFloat(t.cpc || '0'),
@@ -99,8 +80,9 @@ async function fetchMetaAdsData(accountId: string, accessToken: string, period: 
       funnelVideo75: 0,
     };
 
+    // Buscar campanhas com objective
     const campRes = await fetch(
-      `${baseUrl}?access_token=${accessToken}&level=campaign&fields=campaign_id,campaign_name,${baseFields}&time_range=${encodeURIComponent(timeRange)}&limit=50&filtering=${CAMPAIGN_STATUS_FILTER}`
+      `${baseUrl}?access_token=${accessToken}&level=campaign&fields=campaign_id,campaign_name,objective,${baseFields}&time_range=${encodeURIComponent(timeRange)}&limit=50&filtering=${CAMPAIGN_STATUS_FILTER}`
     );
     const campJson = await campRes.json();
 
@@ -112,6 +94,7 @@ async function fetchMetaAdsData(accountId: string, accessToken: string, period: 
           id: `meta-${i}`,
           campaignId: c.campaign_id || '',
           campaignName: c.campaign_name,
+          objective: c.objective || 'UNKNOWN',
           adSetName: 'Ver Detalhes',
           adName: c.name || 'Ver Detalhes',
           spend: parseFloat(c.spend || '0'),
@@ -168,6 +151,7 @@ async function fetchMetaAdsData(accountId: string, accessToken: string, period: 
       });
     }
 
+    // Buscar dados diários
     const dailyRes = await fetch(
       `${baseUrl}?access_token=${accessToken}&level=account&fields=spend,impressions,reach,clicks,actions,results&time_range=${encodeURIComponent(timeRange)}&time_increment=1`
     );

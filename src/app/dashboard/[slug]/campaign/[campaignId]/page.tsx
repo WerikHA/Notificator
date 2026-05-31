@@ -7,7 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { ArrowLeft, Calendar, RefreshCw, Loader2, AlertCircle, TrendingUp, MessageSquare, MousePointerClick, Eye, DollarSign, BarChart3, Target, Users, User } from 'lucide-react';
+import { ArrowLeft, Calendar, RefreshCw, Loader2, AlertCircle, TrendingUp, MessageSquare, MousePointerClick, Eye, DollarSign, BarChart3, Target, Users, User, Info } from 'lucide-react';
+import { getObjectiveConfig } from '@/lib/campaign-objectives';
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 const formatNumber = (val: number) => new Intl.NumberFormat('pt-BR').format(val);
@@ -99,6 +100,9 @@ export default function CampaignDetail({ params }: { params: Promise<{ slug: str
   const daily = data?.daily || [];
   const clientName = data?.clientName || 'Cliente';
 
+  const objective = totals.objective || 'UNKNOWN';
+  const objConfig = getObjectiveConfig(objective);
+
   const chartData = daily.map((d: any) => ({
     name: d.date,
     Investimento: d.spend,
@@ -106,7 +110,6 @@ export default function CampaignDetail({ params }: { params: Promise<{ slug: str
     Cliques: d.clicks,
   }));
 
-  // Dados para gráfico de gênero
   const genderChartData = genderBreakdown.map((g: any) => ({
     name: g.label,
     Investimento: g.spend,
@@ -115,7 +118,6 @@ export default function CampaignDetail({ params }: { params: Promise<{ slug: str
     Impressões: g.impressions,
   }));
 
-  // Dados para gráfico de idade
   const ageChartData = ageBreakdown.map((a: any) => ({
     name: a.ageRange,
     Investimento: a.spend,
@@ -140,10 +142,15 @@ export default function CampaignDetail({ params }: { params: Promise<{ slug: str
               </Button>
               <div>
                 <p className="text-xs text-blue-400">{clientName}</p>
-                <h1 className="text-lg font-bold text-white tracking-tight truncate max-w-[500px]">
-                  Campanha
-                </h1>
-                <p className="text-xs text-gray-500">Detalhes da Campanha</p>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-bold text-white tracking-tight truncate max-w-[500px]">
+                    Detalhes da Campanha
+                  </h1>
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full border ${objConfig.bgColor} ${objConfig.color}`}>
+                    {objConfig.icon} {objConfig.label}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500">{objConfig.description}</p>
               </div>
             </div>
 
@@ -175,7 +182,16 @@ export default function CampaignDetail({ params }: { params: Promise<{ slug: str
       </header>
 
       <main className="flex-1 p-4 max-w-[1600px] mx-auto w-full space-y-4 overflow-y-auto">
-        {/* Métricas Principais */}
+        {/* Dica do Objetivo */}
+        <div className={`p-3 rounded-lg border ${objConfig.bgColor} flex items-start gap-2`}>
+          <Info size={16} className={`${objConfig.color} mt-0.5 shrink-0`} />
+          <div>
+            <p className={`text-xs font-medium ${objConfig.color}`}>Métricas-chave para {objConfig.label}:</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">{objConfig.optimizationTip}</p>
+          </div>
+        </div>
+
+        {/* Métricas Principais - adaptadas ao objetivo */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <MetricCard title="Investimento" value={formatCurrency(totals.spend || 0)} icon={<DollarSign size={14} />} />
           <MetricCard title="Mensagens" value={totals.messages?.toString() || '0'} icon={<MessageSquare size={14} />} sub={totals.messageRate ? `${totals.messageRate.toFixed(1)}% taxa` : undefined} />
@@ -225,9 +241,8 @@ export default function CampaignDetail({ params }: { params: Promise<{ slug: str
           </CardContent>
         </Card>
 
-        {/* Breakdown por Gênero e Idade */}
+        {/* Gênero e Idade */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Gráfico de Gênero */}
           <Card className="bg-[#18191A] border-gray-800 text-white">
             <CardHeader>
               <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
@@ -276,7 +291,6 @@ export default function CampaignDetail({ params }: { params: Promise<{ slug: str
             </CardContent>
           </Card>
 
-          {/* Gráfico de Idade */}
           <Card className="bg-[#18191A] border-gray-800 text-white">
             <CardHeader>
               <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">

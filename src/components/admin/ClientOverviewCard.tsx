@@ -26,7 +26,9 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Target,
 } from 'lucide-react';
+import { getObjectiveConfig, groupCampaignsByObjective, type MetaObjective } from '@/lib/campaign-objectives';
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 const formatNumber = (val: number) => new Intl.NumberFormat('pt-BR').format(val);
@@ -34,6 +36,7 @@ const formatNumber = (val: number) => new Intl.NumberFormat('pt-BR').format(val)
 interface Campaign {
   id: string;
   name: string;
+  objective?: string;
   spend: number;
   impressions: number;
   clicks: number;
@@ -113,6 +116,8 @@ export default function ClientOverviewCard({ client, metrics, campaigns, suggest
   const healthScore = latestSuggestion?.healthScore || 0;
   const healthConfig = getHealthConfig(healthScore);
   const HealthIcon = healthConfig.icon;
+
+  const objectiveGroups = groupCampaignsByObjective(campaigns);
 
   const handleRefresh = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -260,7 +265,6 @@ export default function ClientOverviewCard({ client, metrics, campaigns, suggest
               </div>
             </div>
 
-            {/* Health Bar */}
             <div className="mb-3">
               <Progress value={healthScore} className="h-1.5 bg-gray-800">
                 <div className={`h-full ${healthConfig.bg} rounded-full transition-all`} style={{ width: `${healthScore}%` }} />
@@ -268,10 +272,8 @@ export default function ClientOverviewCard({ client, metrics, campaigns, suggest
               <p className={`text-[10px] mt-1 ${healthConfig.color}`}>{healthConfig.label}</p>
             </div>
 
-            {/* Summary */}
             <p className="text-xs text-gray-400 leading-relaxed mb-3">{latestSuggestion.summary}</p>
 
-            {/* Tips */}
             {latestSuggestion.tips && latestSuggestion.tips.length > 0 && (
               <div className="space-y-1.5">
                 {latestSuggestion.tips.map((tip) => {
@@ -288,49 +290,77 @@ export default function ClientOverviewCard({ client, metrics, campaigns, suggest
           </div>
         )}
 
-        {/* Campaigns */}
+        {/* Campanhas por Objetivo */}
         {campaigns.length > 0 && (
           <div>
             <button
               onClick={() => setExpanded(!expanded)}
               className="w-full flex items-center justify-between p-4 hover:bg-[#1F2022] transition-colors"
             >
-              <span className="text-xs text-gray-400">
-                {campaigns.length} campanha(s) ativa(s)
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">
+                  {campaigns.length} campanha(s)
+                </span>
+                {Object.keys(objectiveGroups).length > 1 && (
+                  <div className="flex gap-1">
+                    {Object.entries(objectiveGroups).map(([obj, camps]) => {
+                      const config = getObjectiveConfig(obj);
+                      return (
+                        <span key={obj} className={`text-[10px] px-1.5 py-0.5 rounded border ${config.bgColor} ${config.color}`}>
+                          {config.icon} {camps.length}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
               {expanded ? <ChevronUp size={14} className="text-gray-500" /> : <ChevronDown size={14} className="text-gray-500" />}
             </button>
 
             {expanded && (
-              <div className="px-4 pb-4 space-y-2">
-                {campaigns.map((camp) => (
-                  <div key={camp.id} className="bg-[#242526] rounded-lg p-3 text-xs">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-gray-300 font-medium truncate max-w-[70%]">{camp.name}</span>
-                      <span className="text-blue-400 font-medium">{camp.messages} msgs</span>
+              <div className="px-4 pb-4 space-y-3">
+                {Object.entries(objectiveGroups).map(([objective, camps]) => {
+                  const objConfig = getObjectiveConfig(objective);
+                  return (
+                    <div key={objective}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs">{objConfig.icon}</span>
+                        <span className={`text-xs font-medium ${objConfig.color}`}>{objConfig.label}</span>
+                        <span className="text-[10px] text-gray-600">• {camps.length} campanha(s)</span>
+                      </div>
+                      <div className="space-y-2">
+                        {camps.map((camp: any) => (
+                          <div key={camp.id} className="bg-[#242526] rounded-lg p-3 text-xs border-l-2" style={{ borderLeftColor: objective === 'OUTCOME_AWARENESS' ? '#A78BFA' : objective === 'OUTCOME_ENGAGEMENT' ? '#60A5FA' : objective === 'OUTCOME_TRAFFIC' ? '#34D399' : objective === 'OUTCOME_LEADS' ? '#FBBF24' : objective === 'OUTCOME_SALES' ? '#F87171' : '#6B7280' }}>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-gray-300 font-medium truncate max-w-[70%]">{camp.name}</span>
+                              <span className="text-blue-400 font-medium">{camp.messages} msgs</span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2 text-[10px]">
+                              <div>
+                                <span className="text-gray-500">Gasto</span>
+                                <p className="text-gray-300">{formatCurrency(camp.spend)}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">CTR</span>
+                                <p className={camp.ctr >= 1 ? 'text-green-400' : camp.ctr >= 0.5 ? 'text-yellow-400' : 'text-red-400'}>
+                                  {camp.ctr.toFixed(2)}%
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">CPC</span>
+                                <p className="text-gray-300">{formatCurrency(camp.cpc)}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Imp</span>
+                                <p className="text-gray-300">{formatNumber(camp.impressions)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-2 text-[10px]">
-                      <div>
-                        <span className="text-gray-500">Gasto</span>
-                        <p className="text-gray-300">{formatCurrency(camp.spend)}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">CTR</span>
-                        <p className={camp.ctr >= 1 ? 'text-green-400' : camp.ctr >= 0.5 ? 'text-yellow-400' : 'text-red-400'}>
-                          {camp.ctr.toFixed(2)}%
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">CPC</span>
-                        <p className="text-gray-300">{formatCurrency(camp.cpc)}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Imp</span>
-                        <p className="text-gray-300">{formatNumber(camp.impressions)}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

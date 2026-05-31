@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/database';
 
 const MSG_TYPE = 'onsite_conversion.total_messaging_connection';
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function extractMessages(data: any): number {
   let count = 0;
@@ -59,7 +59,8 @@ async function fetchClientMetrics(accessToken: string, accountId: string) {
       costPerMessage: msgs > 0 ? spend / msgs : 0,
     };
 
-    const cUrl = base + '?access_token=' + accessToken + '&level=campaign&fields=campaign_id,campaign_name,' + fields + '&time_range=' + encodeURIComponent(tr) + '&limit=50&filtering=' + CAMP_FILTER;
+    // Buscar campanhas com objective
+    const cUrl = base + '?access_token=' + accessToken + '&level=campaign&fields=campaign_id,campaign_name,objective,' + fields + '&time_range=' + encodeURIComponent(tr) + '&limit=50&filtering=' + CAMP_FILTER;
     const cRes = await fetch(cUrl, { signal: AbortSignal.timeout(15000) });
     const cJson = await cRes.json();
 
@@ -68,6 +69,7 @@ async function fetchClientMetrics(accessToken: string, accountId: string) {
       .map((c: any) => ({
         id: c.campaign_id,
         name: c.campaign_name,
+        objective: c.objective || 'UNKNOWN',
         spend: parseFloat(c.spend || '0'),
         impressions: parseInt(c.impressions || '0'),
         clicks: parseInt(c.clicks || '0'),
@@ -90,8 +92,10 @@ async function generateQuickSuggestions(clientName: string, totals: any, campaig
 
   const campLines: string[] = [];
   campaigns.slice(0, 8).forEach((c: any, i: number) => {
+    const objLabel = (c.objective || 'UNKNOWN').replace('OUTCOME_', '');
     campLines.push(
       String(i + 1) + '. ' + c.name +
+      ' [Objetivo: ' + objLabel + ']' +
       ' - R$' + c.spend.toFixed(2) +
       ' | ' + c.messages + ' msgs' +
       ' | CTR ' + c.ctr.toFixed(2) + '%' +
@@ -102,6 +106,7 @@ async function generateQuickSuggestions(clientName: string, totals: any, campaig
 
   const p: string[] = [];
   p.push('Analise as campanhas Meta Ads de "' + clientName + '" e gere um resumo + dicas.');
+  p.push('Considere o OBJETIVO de cada campanha ao avaliar as metricas.');
   p.push('');
   p.push('METRICAS (30 dias):');
   p.push('Total gasto: R$ ' + totals.spend.toFixed(2));
@@ -113,12 +118,19 @@ async function generateQuickSuggestions(clientName: string, totals: any, campaig
   p.push('CPC: R$ ' + totals.cpc.toFixed(2));
   p.push('Custo/msg: R$ ' + totals.costPerMessage.toFixed(2));
   p.push('');
-  p.push('CAMPANHAS:');
+  p.push('CAMPANHAS (com objetivo):');
   campLines.forEach(function(line) { p.push(line); });
+  p.push('');
+  p.push('REGRAS POR OBJETIVO:');
+  p.push('- AWARENESS: foque em CPM baixo e alto alcance. CTR nao e prioridade.');
+  p.push('- ENGAGEMENT: foque em CTR e mensagens. Custo por msg importa.');
+  p.push('- TRAFFIC: foque em CPC baixo e CTR alto.');
+  p.push('- LEADS: foque em custo por lead (mensagem) baixo.');
+  p.push('- SALES: foque em ROAS e custo por conversao.');
   p.push('');
   p.push('Responda APENAS com JSON valido sem markdown:');
   p.push('{"summary":"resumo 2-3 frases","healthScore":75,"tips":[{"text":"dica","priority":"alta"}]}');
-  p.push('healthScore 0-100. 3-5 dicas. Alta se CPM>R$15 ou CTR<0.5%.');
+  p.push('healthScore 0-100. 3-5 dicas.');
 
   const promptText = p.join('\n');
 
@@ -187,7 +199,6 @@ export async function GET(request: NextRequest) {
     const cacheIsValid = !forceRefresh && cache && isCacheFresh(cache.generatedAt);
 
     if (cacheIsValid) {
-      console.log('[Overview] Usando cache. Proxima atualizacao:', getNextRefreshTime());
       return NextResponse.json({
         clients: cache.clients,
         cached: true,
@@ -195,8 +206,6 @@ export async function GET(request: NextRequest) {
         nextRefresh: getNextRefreshTime(),
       });
     }
-
-    console.log('[Overview] Cache invalido ou forçado. Gerando dados frescos...');
 
     const overview = await Promise.all(
       clients.map(async (client) => {

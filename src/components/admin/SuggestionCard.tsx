@@ -17,8 +17,8 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Zap,
 } from 'lucide-react';
+import { getObjectiveConfig } from '@/lib/campaign-objectives';
 
 interface SuggestionItem {
   id: string;
@@ -37,6 +37,7 @@ interface Suggestion {
   clientName: string;
   campaignId: string;
   campaignName: string;
+  objective?: string;
   summary: string;
   suggestions: SuggestionItem[];
   status: 'pending' | 'partially_applied' | 'fully_applied' | 'rejected';
@@ -96,6 +97,7 @@ export default function SuggestionCard({ suggestion, onUpdate }: SuggestionCardP
 
   const overallStatus = STATUS_CONFIG[suggestion.status] || STATUS_CONFIG.pending;
   const OverallIcon = overallStatus.icon;
+  const objConfig = getObjectiveConfig(suggestion.objective);
 
   return (
     <Card className="bg-[#18191A] border-gray-800 text-white">
@@ -106,6 +108,11 @@ export default function SuggestionCard({ suggestion, onUpdate }: SuggestionCardP
               <CardTitle className="text-sm font-medium text-white truncate">
                 {suggestion.campaignName}
               </CardTitle>
+              {suggestion.objective && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${objConfig.bgColor} ${objConfig.color}`}>
+                  {objConfig.icon} {objConfig.shortLabel}
+                </span>
+              )}
               <Badge className={`${overallStatus.bg} ${overallStatus.color} border-0 text-[10px]`}>
                 <OverallIcon size={10} className="mr-1" />
                 {overallStatus.label}

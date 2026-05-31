@@ -22,9 +22,7 @@ function getDateRange(period: string) {
   const now = new Date();
   let since = new Date();
   switch (period) {
-    case 'today':
-      since = new Date(now);
-      break;
+    case 'today': since = new Date(now); break;
     case '7d': since.setDate(now.getDate() - 7); break;
     case '15d': since.setDate(now.getDate() - 15); break;
     case '30d': since.setDate(now.getDate() - 30); break;
@@ -40,9 +38,9 @@ async function fetchCampaignDetails(campaignId: string, accessToken: string, per
   const metricFields = 'spend,impressions,reach,clicks,frequency,actions,results,cpm,cpc,ctr';
 
   try {
-    // 1. Métricas totais da campanha
+    // 1. Métricas + objetivo da campanha
     const totalsRes = await fetch(
-      `${baseUrl}/insights?access_token=${accessToken}&fields=${metricFields}&time_range=${encodeURIComponent(timeRange)}`
+      `${baseUrl}/insights?access_token=${accessToken}&fields=objective,${metricFields}&time_range=${encodeURIComponent(timeRange)}`
     );
     const totalsJson = await totalsRes.json();
 
@@ -67,6 +65,7 @@ async function fetchCampaignDetails(campaignId: string, accessToken: string, per
       reach,
       clicks,
       messages: msgs,
+      objective: t.objective || 'UNKNOWN',
       frequency: parseFloat(t.frequency || '0'),
       cpm: parseFloat(t.cpm || '0'),
       cpc: parseFloat(t.cpc || '0'),
@@ -107,7 +106,7 @@ async function fetchCampaignDetails(campaignId: string, accessToken: string, per
       return order.indexOf(a.ageRange) - order.indexOf(b.ageRange);
     });
 
-    // 4. Breakdown por Ad Set (apenas ativos)
+    // 4. Breakdown por Ad Set
     const adSetFilter = encodeURIComponent(JSON.stringify([
       { "field": "adset.effective_status", "operator": "NOT_IN", "value": ["DELETED", "ARCHIVED"] }
     ]));
@@ -119,23 +118,23 @@ async function fetchCampaignDetails(campaignId: string, accessToken: string, per
     const adSets = (adSetJson.data || [])
       .filter((a: any) => parseFloat(a.spend || '0') > 0 || parseInt(a.impressions || '0') > 0)
       .map((a: any) => {
-      const aMsgs = extractMessages(a);
-      return {
-        id: a.adset_id,
-        name: a.adset_name,
-        spend: parseFloat(a.spend || '0'),
-        impressions: parseInt(a.impressions || '0'),
-        clicks: parseInt(a.clicks || '0'),
-        reach: parseInt(a.reach || '0'),
-        messages: aMsgs,
-        cpm: parseFloat(a.cpm || '0'),
-        ctr: parseFloat(a.ctr || '0'),
-        cpc: parseFloat(a.cpc || '0'),
-        frequency: parseFloat(a.frequency || '0'),
-      };
-    });
+        const aMsgs = extractMessages(a);
+        return {
+          id: a.adset_id,
+          name: a.adset_name,
+          spend: parseFloat(a.spend || '0'),
+          impressions: parseInt(a.impressions || '0'),
+          clicks: parseInt(a.clicks || '0'),
+          reach: parseInt(a.reach || '0'),
+          messages: aMsgs,
+          cpm: parseFloat(a.cpm || '0'),
+          ctr: parseFloat(a.ctr || '0'),
+          cpc: parseFloat(a.cpc || '0'),
+          frequency: parseFloat(a.frequency || '0'),
+        };
+      });
 
-    // 5. Breakdown por Anúncio (apenas ativos)
+    // 5. Breakdown por Anúncio
     const adFilter = encodeURIComponent(JSON.stringify([
       { "field": "ad.effective_status", "operator": "NOT_IN", "value": ["DELETED", "ARCHIVED"] }
     ]));
@@ -147,23 +146,23 @@ async function fetchCampaignDetails(campaignId: string, accessToken: string, per
     const ads = (adJson.data || [])
       .filter((a: any) => parseFloat(a.spend || '0') > 0 || parseInt(a.impressions || '0') > 0)
       .map((a: any) => {
-      const aMsgs = extractMessages(a);
-      return {
-        id: a.ad_id,
-        name: a.ad_name,
-        spend: parseFloat(a.spend || '0'),
-        impressions: parseInt(a.impressions || '0'),
-        clicks: parseInt(a.clicks || '0'),
-        reach: parseInt(a.reach || '0'),
-        messages: aMsgs,
-        cpm: parseFloat(a.cpm || '0'),
-        ctr: parseFloat(a.ctr || '0'),
-        cpc: parseFloat(a.cpc || '0'),
-        frequency: parseFloat(a.frequency || '0'),
-      };
-    });
+        const aMsgs = extractMessages(a);
+        return {
+          id: a.ad_id,
+          name: a.ad_name,
+          spend: parseFloat(a.spend || '0'),
+          impressions: parseInt(a.impressions || '0'),
+          clicks: parseInt(a.clicks || '0'),
+          reach: parseInt(a.reach || '0'),
+          messages: aMsgs,
+          cpm: parseFloat(a.cpm || '0'),
+          ctr: parseFloat(a.ctr || '0'),
+          cpc: parseFloat(a.cpc || '0'),
+          frequency: parseFloat(a.frequency || '0'),
+        };
+      });
 
-    // 6. Dados diários da campanha
+    // 6. Dados diários
     const dailyRes = await fetch(
       `${baseUrl}/insights?access_token=${accessToken}&level=campaign&fields=spend,impressions,reach,clicks,actions,results&time_range=${encodeURIComponent(timeRange)}&time_increment=1`
     );
