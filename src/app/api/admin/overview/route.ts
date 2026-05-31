@@ -59,7 +59,6 @@ async function fetchClientMetrics(accessToken: string, accountId: string) {
       costPerMessage: msgs > 0 ? spend / msgs : 0,
     };
 
-    // Buscar campanhas com objective
     const cUrl = base + '?access_token=' + accessToken + '&level=campaign&fields=campaign_id,campaign_name,objective,' + fields + '&time_range=' + encodeURIComponent(tr) + '&limit=50&filtering=' + CAMP_FILTER;
     const cRes = await fetch(cUrl, { signal: AbortSignal.timeout(15000) });
     const cJson = await cRes.json();
@@ -96,11 +95,11 @@ async function generateQuickSuggestions(clientName: string, totals: any, campaig
     campLines.push(
       String(i + 1) + '. ' + c.name +
       ' [Objetivo: ' + objLabel + ']' +
-      ' - R$' + c.spend.toFixed(2) +
-      ' | ' + c.messages + ' msgs' +
-      ' | CTR ' + c.ctr.toFixed(2) + '%' +
-      ' | CPC R$' + c.cpc.toFixed(2) +
-      ' | CPM R$' + c.cpm.toFixed(2)
+      ' - R$' + (c.spend || 0).toFixed(2) +
+      ' | ' + (c.messages || 0) + ' msgs' +
+      ' | CTR ' + (c.ctr || 0).toFixed(2) + '%' +
+      ' | CPC R$' + (c.cpc || 0).toFixed(2) +
+      ' | CPM R$' + (c.cpm || 0).toFixed(2)
     );
   });
 
@@ -109,14 +108,14 @@ async function generateQuickSuggestions(clientName: string, totals: any, campaig
   p.push('Considere o OBJETIVO de cada campanha ao avaliar as metricas.');
   p.push('');
   p.push('METRICAS (30 dias):');
-  p.push('Total gasto: R$ ' + totals.spend.toFixed(2));
-  p.push('Impressoes: ' + totals.impressions);
-  p.push('Cliques: ' + totals.clicks);
-  p.push('Mensagens: ' + totals.messages);
-  p.push('CTR: ' + totals.ctr.toFixed(2) + '%');
-  p.push('CPM: R$ ' + totals.cpm.toFixed(2));
-  p.push('CPC: R$ ' + totals.cpc.toFixed(2));
-  p.push('Custo/msg: R$ ' + totals.costPerMessage.toFixed(2));
+  p.push('Total gasto: R$ ' + (totals.spend || 0).toFixed(2));
+  p.push('Impressoes: ' + (totals.impressions || 0));
+  p.push('Cliques: ' + (totals.clicks || 0));
+  p.push('Mensagens: ' + (totals.messages || 0));
+  p.push('CTR: ' + (totals.ctr || 0).toFixed(2) + '%');
+  p.push('CPM: R$ ' + (totals.cpm || 0).toFixed(2));
+  p.push('CPC: R$ ' + (totals.cpc || 0).toFixed(2));
+  p.push('Custo/msg: R$ ' + (totals.costPerMessage || 0).toFixed(2));
   p.push('');
   p.push('CAMPANHAS (com objetivo):');
   campLines.forEach(function(line) { p.push(line); });
@@ -186,16 +185,16 @@ export async function GET(request: NextRequest) {
     const clients = db.data?.clients || [];
 
     if (!db.data) {
-      db.data = { examples: [], clients: [], settings: { metaAccessToken: '' }, suggestions: [] };
+      db.data = { examples: [], clients: [], settings: { metaAccessToken: '' }, suggestions: [], overviewCache: null };
     }
     if (!db.data.suggestions) {
       db.data.suggestions = [];
     }
-    if (!db.data.overviewCache) {
-      (db.data as any).overviewCache = null;
+    if (db.data.overviewCache === undefined) {
+      db.data.overviewCache = null;
     }
 
-    const cache = (db.data as any).overviewCache;
+    const cache = db.data.overviewCache;
     const cacheIsValid = !forceRefresh && cache && isCacheFresh(cache.generatedAt);
 
     if (cacheIsValid) {
@@ -261,7 +260,7 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    (db.data as any).overviewCache = {
+    db.data.overviewCache = {
       clients: overview,
       generatedAt: new Date().toISOString(),
     };

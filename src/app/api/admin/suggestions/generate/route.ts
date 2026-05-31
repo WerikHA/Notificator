@@ -47,7 +47,6 @@ async function fetchCampaignData(accessToken: string, accountId: string) {
   const totalsJson = await totalsRes.json();
   const accountTotals = totalsJson.data?.[0] || {};
 
-  // Buscar campanhas com objective
   const campRes = await fetch(
     `${baseUrl}?access_token=${accessToken}&level=campaign&fields=campaign_id,campaign_name,objective,${baseFields}&time_range=${encodeURIComponent(timeRange)}&limit=50&filtering=${CAMPAIGN_STATUS_FILTER}`
   );
@@ -99,19 +98,19 @@ async function generateAISuggestions(clientName: string, accountData: any) {
     const efficiency = c.cpm > 0 ? (avgCpm / c.cpm * 100).toFixed(0) : '0';
     const objLabel = (c.objective || 'UNKNOWN').replace('OUTCOME_', '');
     return `${i + 1}. "${c.name}" (ID: ${c.id})
-   Objetivo: ${objLabel} | Status: ${c.status} | Gasto: R$${c.spend.toFixed(2)} | Imp: ${c.impressions} | Cliques: ${c.clicks}
-   Mensagens: ${c.messages} | CTR: ${c.ctr.toFixed(2)}% | CPC: R$${c.cpc.toFixed(2)} | CPM: R$${c.cpm.toFixed(2)}
-   Freq: ${c.frequency.toFixed(2)} | Eficiência relativa: ${efficiency}%`;
+   Objetivo: ${objLabel} | Status: ${c.status} | Gasto: R$${(c.spend || 0).toFixed(2)} | Imp: ${c.impressions} | Cliques: ${c.clicks}
+   Mensagens: ${c.messages} | CTR: ${(c.ctr || 0).toFixed(2)}% | CPC: R$${(c.cpc || 0).toFixed(2)} | CPM: R$${(c.cpm || 0).toFixed(2)}
+   Freq: ${(c.frequency || 0).toFixed(2)} | Eficiência relativa: ${efficiency}%`;
   }).join('\n\n');
 
   const prompt = `Analise as campanhas Meta Ads da conta "${clientName}" e gere sugestões de otimização.
 Considere o OBJETIVO de cada campanha ao avaliar as métricas.
 
 📊 MÉTRICAS DA CONTA (últimos 30 dias):
-💰 Total gasto: R$${at.spend.toFixed(2)}
-👁️ Impressões: ${at.impressions} | 👆 Cliques: ${at.clicks}
-💬 Mensagens: ${at.messages} | CPM: R$${at.cpm.toFixed(2)} | CPC: R$${at.cpc.toFixed(2)}
-📈 CTR: ${at.ctr.toFixed(2)}%
+💰 Total gasto: R$${(at.spend || 0).toFixed(2)}
+👁️ Impressões: ${at.impressions || 0} | 👆 Cliques: ${at.clicks || 0}
+💬 Mensagens: ${at.messages || 0} | CPM: R$${(at.cpm || 0).toFixed(2)} | CPC: R$${(at.cpc || 0).toFixed(2)}
+📈 CTR: ${(at.ctr || 0).toFixed(2)}%
 
 📋 CAMPANHAS (com objetivo):
 ${campaignsText}
@@ -195,7 +194,7 @@ export async function POST(request: NextRequest) {
 
     const db = await getDb();
     if (!db.data) {
-      db.data = { examples: [], clients: [], settings: { metaAccessToken: '' }, suggestions: [] };
+      db.data = { examples: [], clients: [], settings: { metaAccessToken: '' }, suggestions: [], overviewCache: null };
     }
     if (!db.data.suggestions) {
       db.data.suggestions = [];
